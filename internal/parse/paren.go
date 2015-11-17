@@ -2,21 +2,24 @@
 
 package parse
 
-import "strings"
+import (
+	"errors"
+	"strings"
+)
 
 // parse a string of parenthesis-grouped code into a tree
-func ParenString(s string) (Tree, errorn) {
-	err := func(s string) (error, Tree) {
-		return errors.New(s), nil
+func ParenString(s string) (*Tree, error) {
+	err := func(s string) (*Tree, error) {
+		return nil, errors.New(s)
 	}
 	root := make([]Tree, 13) // Magic! .ilopacicunavajni
 	for s != "" {
 		switch s[0] {
 		case '"': // search for next unescaped double quote
 			skipped := 1 // how many characters we know must be skipped before the next unescaped double quote
-			foundMatch = false
+			foundMatch := false
 			for !foundMatch {
-				i := strings.Index(s[skipped:], '"')
+				i := strings.Index(s[skipped:], "\"")
 				if i < 0 {
 					return err("unmatched \"")
 				}
@@ -31,8 +34,8 @@ func ParenString(s string) (Tree, errorn) {
 		case '(': // start group and search for next unquoted close-paren
 		case ' ', '\n', '\t': // start making next group element at current level
 		default: // all valid code should have been absorbed by the above
-			return errors.New("invalid token encountered; remainder of string follows: " + s), nil
+			return err("invalid token encountered; remainder of string follows: " + s)
 		}
 	}
-	return nil, root
+	return root, nil
 }
