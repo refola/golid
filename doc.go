@@ -6,4 +6,4 @@ Piklisp will start using the following grammar:
 * Whitespace separates things in a group.
 p*/
 
-package main
+package piklisp_go
