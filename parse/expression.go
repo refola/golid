@@ -2,6 +2,17 @@
 
 package parse
 
+/*
+Here's what's needed in a Node for the next lower layer:
+- Add token
+- Add child Node
+- Return last child Node
+- Return parent Node
+- Return Go-style string representation
+*/
+
+// coi la .sampla. .i do ca zvati: Must implement a Node that matches the definition implicit in paren.go.
+
 // what type of expression something is; needed for expressions to
 // interact correctly
 type ExprType int

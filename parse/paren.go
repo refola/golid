@@ -4,42 +4,63 @@ package parse
 
 import (
 	"errors"
+	"regexp"
 )
 
-// Given a string containing a backslash-escaped "string" and an opening quote's index, find the closing quote's index. Returns a negative value if there is no closing quote.
-func findCloseQuote(s string, open int) int {
-	for i := open + 1; i < len(s); i++ {
-		switch s[i] {
-		case s[open]:
-			return i
-		case '\\':
-			i++ // We don't care what the escaped character is, so we just skip it.
-		default:
-			continue
-		}
+// Syntactic characters separate tokens.
+const syntaxChars = " \t\n\""
+
+// Find shortest sequence of double quote, followed by escaped and unescaped characters, followed by double quote
+var stringRegex = regexp.MustCompile(`"([^"\\]|\\.)*"`)
+
+// Find longest sequence of non-syntax characters
+var tokenRegex = regexp.MustCompile("[^ \t\n\"]+")
+
+// Given a string starting with a token, find the end of the token (the index of the first character that follows the token).
+// Rules:
+// * If the token starts with a double quote ("), the token ends at the next double quote that isn't backslash-escaped.
+// * Otherwise the token ends right before the next syntax character.
+// Returns a negative value if there is no valid token.
+func findTokenEnd(s string) int {
+	var re *regexp.Regexp
+	if s[0] == '"' {
+		re = stringRegex
+	} else {
+		re = tokenRegex
 	}
-	return -1
+	loc := re.FindStringIndex(s)
+	if loc == nil {
+		return -1
+	} else {
+		return loc[1]
+	}
 }
 
-// parse a string of parenthesis-grouped code into a tree
+// Parse a string of parenthesis-grouped code into a Tree
 func ParenString(s string) (*Tree, error) {
 	err := func(s string) (*Tree, error) {
 		return nil, errors.New(s)
 	}
-	root := make([]Tree, 13) // Magic! .ilopacicunavajni
+	root := NewNode()
+	node := root
 	for s != "" {
 		switch s[0] {
-		case '"': // search for next unescaped double quote
-			end := findCloseQuote(s, 0)
+		case '(': // go a level deeper
+			node = node.MakeChild()
+			s = s[1:]
+		case ')': // go back up a level
+			node = node.Parent()
+			s = s[1:]
+		case ' ', '\n', '\t': // skip over whitespace
+			s = s[1:]
+		default: // must be a token
+			end := findTokenEnd(s)
 			if end < 0 {
-				return err("missing closing quote")
+				return err("could not find end of token: " + s)
 			} else {
-				// coi la .sampla. .i do ca zvati: need to keep track of where we are in the parse -- maybe turn Tree into Node? This 'else' should append the string to the current node's list of contents.
+				node.AddToken(s[0:end])
+				s = s[end:]
 			}
-		case '(': // start group and search for next unquoted close-paren
-		case ' ', '\n', '\t': // start making next group element at current level
-		default: // all valid code should have been absorbed by the above
-			return err("invalid token encountered; remainder of string follows: " + s)
 		}
 	}
 	return root, nil
