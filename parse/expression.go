@@ -2,6 +2,8 @@
 
 package parse
 
+import "fmt"
+
 // An Expression represents a parsed Lisp expression, which is either
 // a list of Expressions or an Atom. This interface attempts to unify
 // both cases.
@@ -136,16 +138,29 @@ var parseCases map[string]func(*Node) string = map[string]func(*Node) string{"pa
 func (n *Node) GoString() string {
 	// This is very crude, but it should get Hello World working.
 
+	// Lose Irritating Superfluous Parentheses.
+	if n.first == n.last {
+		n = n.first
+	}
+
 	// Assume we're at the top level.
-	if n.first.first.content != "package" {
+	if n.first.content != "package" {
 		panic("This only works on top-level nodes that represent complete programs. Also, it doesn't like comments.")
 	}
 
 	// just parse it
 	ret := ""
+	dbg("n: " + n.String())
 	child := n.first
 	for child != nil {
+		dbg("Raw: " + child.String())
 		ret += parseCases[child.first.content](child) + "\n"
+		dbg("Output: " + ret)
+		child = child.next
 	}
 	return ret
+}
+
+func dbg(s string) {
+	fmt.Println("DEBUG: " + s)
 }
