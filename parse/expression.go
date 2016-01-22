@@ -2,8 +2,6 @@
 
 package parse
 
-import "fmt"
-
 // An Expression represents a parsed Lisp expression, which is either
 // a list of Expressions or an Atom. This interface attempts to unify
 // both cases.
@@ -53,20 +51,23 @@ func (n *Node) Parent() *Node { return n.parent }
 
 // Spit out the code in Lisp form
 func (n *Node) String() string {
-	output := ""
-	if n.first != nil {
-		output += "("
+	ret := ""
+	switch {
+	case n.first != nil:
+		ret += "("
 		child := n.first
 		for child != nil {
-			output += child.String()
-			output += "\n"
+			ret += child.String()
+			ret += "\n"
 			child = child.next
 		}
-		output = output[:len(output)-1] + ")"
-	} else {
-		output = n.content
+		ret = ret[:len(ret)-1] + ")"
+	case n.content == "":
+		ret += "()"
+	default:
+		ret += n.content
 	}
-	return output
+	return ret
 }
 
 func parsePackage(n *Node) string {
@@ -76,7 +77,7 @@ func parseImport(n *Node) string {
 	ret := "import ("
 	child := n.first.next
 	for child != nil {
-		ret += `"` + child.content + `" `
+		ret += child.content + " "
 		child = child.next
 	}
 	ret += ")"
@@ -95,13 +96,13 @@ func children(n *Node) string {
 }
 
 // output a function call in Go form
-func parseFunction(n *Node) string {
+func parseFunCall(n *Node) string {
 	child := n.first
 	ret := child.content + "("
 	child = child.next
 	for child != nil {
 		if child.content == "" {
-			ret += parseFunction(child)
+			ret += parseFunCall(child)
 		} else {
 			ret += child.content
 		}
@@ -126,41 +127,30 @@ func parseFunc(n *Node) string {
 	ret += "{"
 	// function body -- for now just assum eit's a bunch of function calls
 	for child != nil {
-		ret += parseFunc(child) + ";"
+		ret += parseFunCall(child) + ";"
+		child = child.next
 	}
 	ret += "}"
 	return ret
 }
 
-var parseCases map[string]func(*Node) string = map[string]func(*Node) string{"package": parsePackage, "import": parseImport, "func": parseFunction}
+var parseCases map[string]func(*Node) string = map[string]func(*Node) string{"package": parsePackage, "import": parseImport, "func": parseFunc}
 
 // Convert Lisp to Go.
 func (n *Node) GoString() string {
 	// This is very crude, but it should get Hello World working.
 
-	// Lose Irritating Superfluous Parentheses.
-	if n.first == n.last {
-		n = n.first
-	}
-
 	// Assume we're at the top level.
-	if n.first.content != "package" {
+	if n.first.first.content != "package" {
 		panic("This only works on top-level nodes that represent complete programs. Also, it doesn't like comments.")
 	}
 
 	// just parse it
 	ret := ""
-	dbg("n: " + n.String())
 	child := n.first
 	for child != nil {
-		dbg("Raw: " + child.String())
 		ret += parseCases[child.first.content](child) + "\n"
-		dbg("Output: " + ret)
 		child = child.next
 	}
 	return ret
-}
-
-func dbg(s string) {
-	fmt.Println("DEBUG: " + s)
 }

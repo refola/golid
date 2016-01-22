@@ -7,14 +7,11 @@ import (
 	"regexp"
 )
 
-// Syntactic characters separate tokens.
-const syntaxChars = " \t\n\""
-
 // Find shortest sequence of double quote, followed by escaped and unescaped characters, followed by double quote
 var stringRegex = regexp.MustCompile(`"([^"\\]|\\.)*"`)
 
 // Find longest sequence of non-syntax characters
-var tokenRegex = regexp.MustCompile("[^ \t\n\"]+")
+var tokenRegex = regexp.MustCompile("[^ \t\n\"()]+")
 
 // Given a string starting with a token, find the end of the token (the index of the first character that follows the token).
 // Rules:
