@@ -37,11 +37,11 @@ func findTokenEnd(s string) int {
 }
 
 // Parse a string of parenthesis-grouped code into a Tree
-func ParenString(s string) (*Tree, error) {
-	err := func(s string) (*Tree, error) {
+func ParenString(s string) (Expression, error) {
+	err := func(s string) (Expression, error) {
 		return nil, errors.New(s)
 	}
-	root := NewNode()
+	root := Root()
 	node := root
 	for s != "" {
 		switch s[0] {

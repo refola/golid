@@ -2,36 +2,10 @@
 
 package parse
 
-/*
-Here's what's needed in a Node for the next lower layer:
-- Add token
-- Add child Node
-- Return last child Node
-- Return parent Node
-- Return Go-style string representation
-*/
-
-// coi la .sampla. .i do ca zvati: Must implement a Node that matches the definition implicit in paren.go.
-
-// what type of expression something is; needed for expressions to
-// interact correctly
-type ExprType int
-
-const (
-	// a list of expressions
-	List ExprType = iota
-
-	// an identifier, constant expression, keyword, or anything else
-	// that doesn't syntactically contain other stuff inside of it
-	Atom
-)
-
 // An Expression represents a parsed Lisp expression, which is either
 // a list of Expressions or an Atom. This interface attempts to unify
 // both cases.
 type Expression interface {
-	Type() ExprType // List or Atom
-
 	// Return to canonical (Lisp) form. It doesn't have to be pretty. It
 	// just has to have the parentheses match.
 	String() string
@@ -41,24 +15,59 @@ type Expression interface {
 	GoString() string
 }
 
-// a tree contains either children or a string
-type Tree struct {
-	parent, prev, next *Tree
-	children           []*Tree
-	content            string
+// A Node represents a single thing in parsing a Lisp expression.
+type Node struct {
+	parent, prev, next, first, last *Node
+	content                         string
 }
 
-func (t *Tree) String() string {
+// Make a root node.
+func Root() *Node {
+	return new(Node)
+}
+
+// Make a new Node after the current Node's last child
+func (n *Node) MakeChild() *Node {
+	child := new(Node)
+	if n.first == nil {
+		n.first = child
+	} else {
+		n.last.next = child
+		child.prev = n.last
+	}
+	n.last = child
+	child.parent = n
+	return child
+}
+
+// Append a child Node containing a string
+func (n *Node) AddToken(s string) {
+	n.MakeChild()
+	n.last.content = s
+}
+
+// Accessor needed for parser
+func (n *Node) Parent() *Node { return n.parent }
+
+// Spit out the code in Lisp form
+func (n *Node) String() string {
 	output := ""
-	if t.children != nil {
+	if n.first != nil {
 		output += "("
-		for i, child := range t.children {
+		child := n.first
+		for child != nil {
 			output += child.String()
 			output += "\n"
+			child = child.next
 		}
 		output = output[:len(output)-1] + ")"
 	} else {
-		output = t.content
+		output = n.content
 	}
 	return output
+}
+
+// Convert Lisp to Go.
+func (n *Node) GoString() string {
+	return "WARNING: This just wraps the String() function.\n" + n.String() // TODO: Implement this for real.
 }
