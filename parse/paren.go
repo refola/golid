@@ -73,8 +73,8 @@ func Srfi49String(s string) (Expression, error) {
 	// how deep have we gone with leading tabs?
 	depth := 0
 	// immediately go a level deeper for the first line
-	root := Root().MakeChild()
-	node := root
+	root := Root()
+	node := root.MakeChild()
 	for s != "" {
 		switch s[0] {
 		case '(': // go a level deeper

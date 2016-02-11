@@ -37,6 +37,7 @@ func convert(in_name, ext string, srfi49 bool) {
 	}
 	lisp_parse, err := parseFn(lisp_text)
 	e(err)
+	fmt.Printf("Here's the Lisp code for %s:\n%s\n", in_name, lisp_parse)
 	go_text := lisp_parse.GoString()
 	out_name := in_name[:len(in_name)-len(ext)] + ".go"
 	err = ioutil.WriteFile(out_name, []byte(go_text), os.ModePerm)
