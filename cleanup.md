@@ -1,5 +1,4 @@
 Here's what needs to be cleaned up before working on the next milestone goal.
 
-* Use proper test cases in separate files instead of hard-coding one test into main.
-* Make the main executable take parameters listing the file(s) to convert.
-* Clean up *Node.GoString() and the functions it calls. Use a template system?
+0. Make more advanced test cases until it fails to convert to Go.
+0. Fix *Node.GoString() and everything else that fails a test. Use a template system?
