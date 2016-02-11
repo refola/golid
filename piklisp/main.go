@@ -16,7 +16,7 @@ Converts Piklisp Go code into Go.`
 
 func e(err error) {
 	if err != nil {
-		fmt.Printf("Error: %s", err)
+		fmt.Printf("Error: %s\n", err)
 		os.Exit(1)
 	}
 }
@@ -56,7 +56,7 @@ func main() {
 		case strings.HasSuffix(input_name, gol):
 			convert(input_name, gol, true)
 		default:
-			e(errors.New("Invalid filename: " + "input_name"))
+			e(errors.New("Invalid filename: " + input_name))
 		}
 	}
 }
