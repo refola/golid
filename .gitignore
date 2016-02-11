@@ -1,3 +1,13 @@
+# Custom gitignore file locations
+
+# These .go files are generated from Piklisp.
+example/*.go
+
+# Go's default executable name
+main
+
+##### DEFAULT STUFF ADDED BY GITHUB #####
+
 # Compiled Object files, Static and Dynamic libs (Shared Objects)
 *.o
 *.a
