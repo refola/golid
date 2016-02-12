@@ -1,7 +1,8 @@
 # Custom gitignore file locations
 
 # These .go files are generated from Piklisp.
-example/*.go
+*/gol_*.go
+*/plgo_*.go
 
 # Go's default executable name
 main
