@@ -11,19 +11,34 @@ import (
 const plgo = "plgo" // praenthesized version of Piklisp-Go
 const gol = "gol"   // less parens extension
 
-// split filename into base and extension, returning original name if no '.' found
-func split_filename(fn string) (string, string) {
-	for i := len(fn) - 1; i >= 0; i-- {
-		if fn[i] == '.' {
-			return fn[:i-1], fn[i+1:]
+// split path into directory, filename, and extension, based on
+// right-most '.' and '/' characters, and omitting said separators
+func dir_name_ext_split(path string) (string, string, string) {
+	dot, slash := 0, 0
+	foundDot, foundSlash := false, false
+	for i, v := range path {
+		switch v {
+		case '.':
+			dot = i
+			foundDot = true
+		case '/':
+			slash = i
+			foundSlash = true
 		}
 	}
-	return fn, ""
+	dir, name, ext := path[:slash], path[slash:dot], path[dot:]
+	if foundDot {
+		ext = ext[1:]
+	}
+	if foundSlash {
+		name = name[1:]
+	}
+	return dir, name, ext
 }
 
 // Read a file into a Piklisp syntax tree
 func ReadPiklisp(plfile string) (Expression, error) {
-	_, ext := split_filename(plfile)
+	_, _, ext := dir_name_ext_split(plfile)
 	parseFn := ParenString
 	switch ext {
 	case plgo: // valid case, but we already have its parseFn set
@@ -47,9 +62,9 @@ func Convert(plfile string, write_result bool) error {
 		return err
 	}
 	go_text := parsed.GoString()
-	name, ext := split_filename(plfile)
+	dir, name, ext := dir_name_ext_split(plfile)
 	if write_result {
-		gofile := fmt.Sprintf("%s_%s.go", ext, name)
+		gofile := fmt.Sprintf("%s/%s_%s.go", dir, ext, name)
 		err = ioutil.WriteFile(gofile, []byte(go_text), os.ModePerm)
 	}
 	return err
