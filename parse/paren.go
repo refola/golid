@@ -101,8 +101,11 @@ func Srfi49String(s string) (Expression, error) {
 					node = node.Parent()
 				}
 			case new_depth == depth:
-				// make new sibling node at same depth
-				node = node.Parent().MakeChild()
+				// if we're not at a blank line
+				if s != "" && s[0] != '\n' {
+					// make new sibling node at same depth
+					node = node.Parent().MakeChild()
+				}
 			case new_depth == depth+1:
 				// increasing depth makes a new child node
 				node = node.MakeChild()
