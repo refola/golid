@@ -1,0 +1,9 @@
+// This is a line comment.
+package main
+// This is another line comment.
+import "fmt"
+// I don't know what syntax a multi-line comment should use, or if it's
+// even a good idea to implement it in the first place.
+func main() () {
+	fmt.Println("Comments test")
+}
