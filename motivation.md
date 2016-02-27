@@ -56,7 +56,7 @@ taking the short answer of "you can't", I tried the next shorter
 answer of "use a Lisp".
 
 So I went and learned some Common Lisp. By "learned", I mean I did the
-"Lisp Koans"(https://github.com/google/lisp-koans) to quickly go
+[Lisp Koans](https://github.com/google/lisp-koans) to quickly go
 through the basics of how the language works. Syntactically, I was
 quite impressed. It was actually really easy in Common Lisp to write
 the desired "magic function". Semantically, however, I wasn't so
