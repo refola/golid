@@ -47,9 +47,33 @@ func TestConversions(t *testing.T) {
 				failures = append(failures, filename)
 			}
 		}
-		t.Logf("Failed to parse %d/%d test files in %s.", failcount, len(files), dir)
+		t.Errorf("Failed to parse %d/%d test files in %s.", failcount, len(files), dir)
 	}
 	if len(failures) > 0 {
-		t.Logf("Failed files: %v\n", failures)
+		t.Errorf("Failed files: %v\n", failures)
 	}
+}
+
+func TestDirNameExt(t *testing.T) {
+	cases := map[string][]string{
+		"/foo/bar.baz":  {"/foo", "bar", "baz"},
+		"foo":           {"", "foo", ""},
+		"foo/bar":       {"foo", "bar", ""},
+		"/foo.bar/baz":  {"/foo.bar", "baz", ""},
+		"/foo/bar/.baz": {"/foo/bar", ".baz", ""},
+	}
+	failed := 0
+	for in, want := range cases {
+		t.Logf("Test '%s' → '%v'", in, want)
+		a, b, c := dirNameExt(in)
+		result := []string{a, b, c}
+		for i, v := range result {
+			if want[i] != v {
+				t.Errorf("Error: Got '%v' instead.", result)
+				failed++
+				break
+			}
+		}
+	}
+	t.Logf("Failed %v/%v tests.", failed, len(cases))
 }

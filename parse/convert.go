@@ -13,24 +13,27 @@ const gol = "gol"   // less parens extension
 
 // split path into directory, filename, and extension, based on
 // right-most '.' and '/' characters, and omitting said separators
-func dir_name_ext_split(path string) (string, string, string) {
-	dot, slash := 0, 0
-	foundDot, foundSlash := false, false
+func dirNameExt(path string) (string, string, string) {
+	pos := make(map[rune]int)
+	// find the last slash and dot in the string
 	for i, v := range path {
 		switch v {
-		case '.':
-			dot = i
-			foundDot = true
-		case '/':
-			slash = i
-			foundSlash = true
+		case '/', '.':
+			pos[v] = i
 		}
 	}
+	// figure out validity and split string
+	slash, foundSlash := pos['/']
+	dot, foundDot := pos['.']
+	if dot <= slash+1 { // if there was a dot here, then it was in the directory or at the beginning of a "dotfile", e.g., "/foo.bar/baz" or "/foo/bar/.baz"
+		dot = len(path)
+		foundDot = false
+	}
 	dir, name, ext := path[:slash], path[slash:dot], path[dot:]
-	if foundDot {
+	if foundDot { // trim leading dot from extension
 		ext = ext[1:]
 	}
-	if foundSlash {
+	if foundSlash { // trim leading slash from name
 		name = name[1:]
 	}
 	return dir, name, ext
@@ -38,7 +41,7 @@ func dir_name_ext_split(path string) (string, string, string) {
 
 // Read a file into a Piklisp syntax tree
 func ReadPiklisp(plfile string) (Expression, error) {
-	_, _, ext := dir_name_ext_split(plfile)
+	_, _, ext := dirNameExt(plfile)
 	mode := classic
 	switch ext {
 	case plgo: // valid case, but we already have its parseFn set
@@ -62,7 +65,7 @@ func Convert(plfile string, write_result bool) error {
 		return err
 	}
 	go_text := parsed.GoString()
-	dir, name, ext := dir_name_ext_split(plfile)
+	dir, name, ext := dirNameExt(plfile)
 	if write_result {
 		gofile := fmt.Sprintf("%s/%s_%s.go", dir, ext, name)
 		err = ioutil.WriteFile(gofile, []byte(go_text), os.ModePerm)
