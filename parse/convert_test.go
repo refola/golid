@@ -29,18 +29,27 @@ func TestConversions(t *testing.T) {
 		return true
 	}
 
+	testDirs := []string{"srfi49", "classic"}
 	prefix := "../tests"
-	files, err := ioutil.ReadDir(prefix)
-	if err != nil {
-		t.Fatal("Could not open tests folder:", err)
-	}
-	failcount := 0
-	for _, f := range files {
-		filename := prefix + "/" + f.Name()
-		if !parsable(filename) {
-			t.Errorf("Failed parsing %s.\n", filename)
-			failcount++
+	failures := []string{}
+	for _, dir := range testDirs {
+		dir = prefix + "/" + dir
+		files, err := ioutil.ReadDir(dir)
+		if err != nil {
+			t.Fatal("Could not open tests folder:", err)
 		}
+		failcount := 0
+		for _, f := range files {
+			filename := dir + "/" + f.Name()
+			if !parsable(filename) {
+				t.Errorf("Failed parsing %s.\n", filename)
+				failcount++
+				failures = append(failures, filename)
+			}
+		}
+		t.Logf("Failed to parse %d/%d test files in %s.", failcount, len(files), dir)
 	}
-	t.Logf("Failed to parse %d/%d test files.", failcount, len(files))
+	if len(failures) > 0 {
+		t.Logf("Failed files: %v\n", failures)
+	}
 }
