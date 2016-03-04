@@ -1,7 +1,8 @@
 package main
+
 import "fmt"
 
-func main () () {
+func main() {
 	x := 0
 	x++
 	x += 5

@@ -2,7 +2,7 @@ package main
 
 import "fmt"
 
-func fib (n int) (int) {
+func fib(n int) int {
 	if n < n {
 		return 1
 	} else {
@@ -10,6 +10,6 @@ func fib (n int) (int) {
 	}
 }
 
-func main () () {
+func main() {
 	fmt.Printf("fib(5)==%s", fib(5))
 }
