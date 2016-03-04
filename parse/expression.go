@@ -17,8 +17,10 @@ type Expression interface {
 
 // A Node represents a single thing in parsing a Lisp expression.
 type Node struct {
-	parent, prev, next, first, last *Node
-	content                         string
+	parent      *Node // the Node that this one's a child of
+	next        *Node // the next Node under this Node's parent
+	first, last *Node // the first and last child Nodes of this one
+	content     string
 }
 
 // Make a root node.
@@ -33,7 +35,6 @@ func (n *Node) MakeChild() *Node {
 		n.first = child
 	} else {
 		n.last.next = child
-		child.prev = n.last
 	}
 	n.last = child
 	child.parent = n
