@@ -39,20 +39,20 @@ func dir_name_ext_split(path string) (string, string, string) {
 // Read a file into a Piklisp syntax tree
 func ReadPiklisp(plfile string) (Expression, error) {
 	_, _, ext := dir_name_ext_split(plfile)
-	parseFn := ParenString
+	mode := classic
 	switch ext {
 	case plgo: // valid case, but we already have its parseFn set
 	case gol:
-		parseFn = Srfi49String
+		mode = srfi49
 	default:
 		return nil, fmt.Errorf("File %s has non-Piklisp extension %s", plfile, ext)
 	}
-	lisp_bytes, err := ioutil.ReadFile(plfile)
+	lispBytes, err := ioutil.ReadFile(plfile)
 	if err != nil {
 		return nil, err
 	}
-	lisp_text := string(lisp_bytes)
-	return parseFn(lisp_text)
+	lispText := string(lispBytes)
+	return parseString(lispText, mode)
 }
 
 // Convert a Piklisp file into Go. It uses normal Lisp syntax if the extension is .plgo and SRFI#49 if the extension is .gol.

@@ -34,47 +34,56 @@ func findTokenEnd(s string) int {
 	}
 }
 
-// Parse a string of parenthesis-grouped code into a Tree
-func ParenString(s string) (Expression, error) {
-	err := func(s string) (Expression, error) {
-		return nil, errors.New(s)
-	}
-	root := Root()
-	node := root
-	for s != "" {
-		switch s[0] {
-		case '(': // go a level deeper
-			node = node.MakeChild()
-			s = s[1:]
-		case ')': // go back up a level
+// change the node according to how the indentation depth level changed
+// NOTE: This assumes that the calling parse function is not at a blank line state.
+func indentSrfi49(depthChange int, node *Node) *Node {
+	switch {
+	case depthChange < 0:
+		// decrease depth by as many levels as the change
+		for i := depthChange; i < 0; i++ {
 			node = node.Parent()
-			s = s[1:]
-		case ' ', '\n', '\t': // skip over whitespace
-			s = s[1:]
-		default: // must be a token
-			end := findTokenEnd(s)
-			if end < 0 {
-				return err("could not find end of token: " + s)
-			} else {
-				node.AddToken(s[0:end])
-				s = s[end:]
-			}
 		}
+	case depthChange == 0:
+		// make new sibling node at same depth
+		node = node.Parent().MakeChild()
+	case depthChange > 0:
+		// increasing depth makes a new child node
+		for i := 0; i < depthChange; i++ {
+			node = node.MakeChild()
+		}
+	default:
+		panic("Impossible! DepthChange is not less than, equal to, or greater than zero!")
 	}
-	return root, nil
+	return node
 }
 
-// Parse a string of SRFI#49-formatted Lisp code into a Tree
-func Srfi49String(s string) (Expression, error) {
-	line := 0 // which line we're on
+// what type of parsing we're doing
+type parseMode int
+
+const (
+	classic = parseMode(iota)
+	srfi49
+)
+
+// Parse a Piklisp string into ints AST representation
+func parseString(s string, mode parseMode) (Expression, error) {
+	// setup everything
+	line := 0 // which line was last reached
+
+	// convenience "exit while showing error and line number" function
 	err := func(s string) (Expression, error) {
-		return nil, errors.New(fmt.Sprintf("Line %v: %s", line, s))
+		return nil, errors.New(fmt.Sprintf("Line %s: %v", line, s))
 	}
-	// how deep have we gone with leading tabs?
-	depth := 0
-	// immediately go a level deeper for the first line
-	root := Root()
-	node := root.MakeChild()
+
+	implicitParenDepth := 0 // how many layers of parentheses are currently elided
+	root := Root()          // the top-level node to return
+	node := root            // the active node being parsed
+	if mode == srfi49 {
+		// here there are no extra parens to start the first subnode
+		node = node.MakeChild()
+	}
+
+	// keep going until the string's empty
 	for s != "" {
 		switch s[0] {
 		case '(': // go a level deeper
@@ -83,38 +92,26 @@ func Srfi49String(s string) (Expression, error) {
 		case ')': // go back up a level
 			node = node.Parent()
 			s = s[1:]
-		case ' ', '\t': // skip over meaningless whitespace
+		case ' ', '\t': // ignored whitespace
 			s = s[1:]
-		case '\n':
-			line++
-			// absorb and count new line's leading tabs
-			new_depth := 0
-			s = s[1:]
-			for s != "" && s[0] == '\t' {
-				new_depth++
+		case '\n': // either whitespace or marking srfi49 checks
+			// absorb all consecutive newlines so blank lines can be used as
+			// separation inside an indented group
+			for s != "" && s[0] == '\n' {
+				line++
 				s = s[1:]
 			}
-			switch {
-			case new_depth < depth:
-				// decrease depth by as many levels as the change
-				for i := 0; i < depth-new_depth; i++ {
-					node = node.Parent()
+			if mode == classic {
+				continue
+			} else {
+				newDepth := 0
+				for s != "" && s[0] == '\t' {
+					newDepth++
+					s = s[1:]
 				}
-			case new_depth == depth:
-				// if we're not at a blank line
-				if s != "" && s[0] != '\n' {
-					// make new sibling node at same depth
-					node = node.Parent().MakeChild()
-				}
-			case new_depth == depth+1:
-				// increasing depth makes a new child node
-				node = node.MakeChild()
-			case new_depth > depth+1:
-				err("Attempt to increase depth by more than one level at a time")
-			default:
-				err("Parser encountered impossible situation!")
+				node = indentSrfi49(newDepth-implicitParenDepth, node)
+				implicitParenDepth = newDepth
 			}
-			depth = new_depth
 		default: // must be a token
 			end := findTokenEnd(s)
 			if end < 0 {
