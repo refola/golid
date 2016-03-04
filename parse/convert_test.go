@@ -15,10 +15,13 @@ func TestConversions(t *testing.T) {
 	parsable := func(fn string) (ret bool) {
 		defer func() {
 			if r := recover(); r != nil {
-				t.Errorf("Error processing %s:\n%s\n", fn, r)
-				trace := make([]byte, 1e4)
-				i := runtime.Stack(trace, false)
-				t.Errorf("Stack trace:\n%s\n", trace[:i])
+				t.Errorf("Panic: %s\n", r)
+				// TODO: Re-enable this after implementing the less ad-hoc GoString functions.
+				if false {
+					trace := make([]byte, 1e4)
+					i := runtime.Stack(trace, false)
+					t.Errorf("Stack trace:\n%s\n", trace[:i])
+				}
 			}
 		}()
 		err := Convert(fn, false)
