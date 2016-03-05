@@ -32,7 +32,7 @@ Top-level:
 * (first args) → first args
 ** package
 * (first args ...)
-→ first (args ...)
+→ first (args; ...)
 ** import
 * (first (arg1 ...) (arg2 ...) ...)
 → first ( arg1 ...; arg2 ...; ... )
@@ -78,87 +78,179 @@ Value:
 
 package parse
 
-func parsePackage(n *Node) string {
-	return "package " + n.last.content + "\n"
-}
-func parseImport(n *Node) string {
-	ret := "import ("
-	child := n.first.next
-	for child != nil {
-		ret += child.content + " "
-		child = child.next
-	}
-	ret += ")"
-	return ret
+import "fmt"
+
+type nodeType int
+
+const (
+	topNode nodeType = iota
+	actionNode
+	valueNode
+)
+
+func (t nodeType) String() string {
+	return map[nodeType]string{
+		topNode:    "topNode",
+		actionNode: "actionNode",
+		valueNode:  "valueNode",
+	}[t]
 }
 
-// return a space-separated list of node contents
-func children(n *Node) string {
-	child := n.first
-	ret := ""
-	for child != nil {
-		ret += child.content + " "
-		child = child.next
+func nodeProcessTop(n *Node) string {
+	var f func(*Node) string
+	switch n.first.content {
+	case "package":
+		f = nodeUnparenTwo
+	case "import":
+		f = nodeImport
+	case "const", "var":
+		f = nodeConstVar
+	case "func":
+		f = nodeFunc
+	default:
+		panic("Unknown top-level node: " + n.first.content)
 	}
-	return ret
+	return f(n)
 }
 
-// output a function call in Go form
-func parseFunCall(n *Node) string {
-	child := n.first
-	ret := child.content + "("
-	child = child.next
-	for child != nil {
-		if child.content == "" {
-			ret += parseFunCall(child)
+func nodeProcessAction(n *Node) string {
+	var f func(*Node) string
+	switch n.first.content {
+	case "=", ":=", "+=", "-=", "*=", "/=":
+		f = nodeAssign
+	case "if", "for", "switch", "select":
+		f = nodeControlBlock
+	case "return":
+		f = nodeUnparenTwo
+	default:
+		f = nodeFuncall
+	}
+	return f(n)
+}
+
+func nodeProcessValue(n *Node) string {
+	panic("unimplemented!")
+	var f func(*Node) string
+	switch n.first.content {
+	case "+", "-", "*", "/", "==", "!=", ">=", "<=", "<", ">":
+		f = nodeMath
+	default:
+		f = nodeFuncall
+	}
+	return f(n)
+}
+
+// figure out and apply the correct node-parsing action
+func nodeProcess(first *Node, t nodeType) string {
+	var f func(*Node) string
+	switch t {
+	case topNode:
+		f = nodeProcessTop
+	case actionNode:
+		f = nodeProcessAction
+	case valueNode:
+		f = nodeProcessValue
+	default:
+		panic(fmt.Errorf("Unknown type of node: %v", t))
+	}
+	out := ""
+	for n := first; n != nil; n = n.next {
+		result, err := func() (out string, err error) {
+			defer func() {
+				if r := recover(); r != nil {
+					err = fmt.Errorf("Recovered panic: %v", r)
+				}
+			}()
+			out = f(n)
+			return
+		}()
+		if err != nil {
+			panic(fmt.Errorf("Could not process code as %v: %v\n Got error: %v", t, n, err))
 		} else {
-			ret += child.content
+			out += result + "\n"
 		}
-		if child.next != nil {
-			ret += ","
-		}
-		child = child.next
 	}
-	ret += ")"
-	return ret
-}
-func parseFunc(n *Node) string {
-	// This is really crude and will need recursion eventually, but it'll get through Hello World.
-	ret := "func"
-	child := n.first.next
-	ret += " " + child.content
-	child = child.next
-	for i := 0; i < 2; i++ { // parameters and return
-		ret += "(" + children(child) + ")"
-		child = child.next
-	}
-	ret += "{"
-	// function body -- for now just assum eit's a bunch of function calls
-	for child != nil {
-		ret += parseFunCall(child) + ";"
-		child = child.next
-	}
-	ret += "}"
-	return ret
+	return out
 }
 
-var parseCases map[string]func(*Node) string = map[string]func(*Node) string{"package": parsePackage, "import": parseImport, "func": parseFunc}
-
-// Convert Lisp to Go.
 func (n *Node) GoString() string {
-	// This is very crude, but it should get Hello World working.
+	return nodeProcess(n.first, topNode)
+}
 
-	// Assume we're at the top level.
-	if n.first.first.content != "package" {
-		panic("This only works on top-level nodes that represent complete programs. Also, it doesn't like comments.")
-	}
+func nodeUnparenTwo(n *Node) string {
+	return n.first.content + " " + n.last.content
+}
 
-	// just parse it
-	ret := ""
-	child := n.first
-	for child != nil {
-		ret += parseCases[child.first.content](child) + "\n"
-		child = child.next
+func nodeImport(n *Node) string {
+	out := "import ("
+	for n = n.first.next; n != nil; n = n.next {
+		out += n.content + "; "
 	}
-	return ret
+	out += ")"
+	return out
+}
+
+func nodeConstVar(n *Node) string {
+	out := n.first.content + "("
+	for n = n.first.next; n != nil; n = n.next {
+		out += nodeContents(n) + "\n"
+	}
+	out += ")"
+	return out
+}
+
+// return space-separated list of node contents
+func nodeContents(n *Node) string {
+	out := ""
+	for n = n.first; n != nil; n = n.next {
+		out += n.content + " "
+	}
+	return out
+}
+
+func nodeFunc(n *Node) string {
+	// "func"
+	n = n.first
+	out := n.content
+	// function name
+	n = n.next
+	out += " " + n.content
+	// function args
+	n = n.next
+	out += "(" + nodeContents(n) + ")"
+	// function return types
+	n = n.next
+	out += "(" + nodeContents(n) + ")"
+	// function body
+	out += "{" + nodeProcess(n.next.first, actionNode) + "}"
+	return out
+}
+
+func nodeAssign(n *Node) string {
+	// Go LHS and assignment operator
+	n = n.first
+	out := n.next.content + n.content
+	// RHS
+	for n = n.next.next; n != nil; n = n.next {
+		out += " " + n.content
+	}
+	return out
+}
+
+func nodeFuncall(n *Node) string {
+	return n.first.content + "(" + nodeProcess(n.first.next, valueNode) + ")"
+}
+
+func nodeControlBlock(n *Node) string {
+	panic("unimplemented!")
+}
+
+func nodeMath(n *Node) string {
+	n = n.first
+	first := n.content
+	n = n.next
+	second := n.content
+	n = n.next
+	third := n.content
+	return "(" + second + " " + first + " " + third + ")"
 }
