@@ -8,6 +8,9 @@ import (
 	"testing"
 )
 
+// const DEBUG = true
+const DEBUG = false
+
 // check that each Piklisp file converts successfully to Go, without
 // crashing
 func TestConversions(t *testing.T) {
@@ -17,7 +20,7 @@ func TestConversions(t *testing.T) {
 			if r := recover(); r != nil {
 				t.Errorf("Panic: %s\n", r)
 				// TODO: Re-enable this after implementing the less ad-hoc GoString functions.
-				if false {
+				if DEBUG {
 					trace := make([]byte, 1e4)
 					i := runtime.Stack(trace, false)
 					t.Errorf("Stack trace:\n%s\n", trace[:i])
