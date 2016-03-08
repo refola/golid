@@ -108,7 +108,7 @@ func nodeProcessAction(n *Node) string {
 		f = nodeAssign
 	case "if", "for", "switch", "select":
 		f = nodeControlBlock
-	case "return":
+	case "return": // TODO: This needs to handle more than one thing following return.
 		f = nodeUnparenTwo
 	default:
 		f = nodeFuncall
