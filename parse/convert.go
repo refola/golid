@@ -59,16 +59,14 @@ func ReadPiklisp(plfile string) (Expression, error) {
 }
 
 // Convert a Piklisp file into Go. It uses normal Lisp syntax if the extension is .plgo and SRFI#49 if the extension is .gol.
-func Convert(plfile string, write_result bool) error {
+func Convert(plfile string) error {
 	parsed, err := ReadPiklisp(plfile)
 	if err != nil {
 		return err
 	}
 	go_text := parsed.GoString()
 	dir, name, ext := dirNameExt(plfile)
-	if write_result {
-		gofile := fmt.Sprintf("%s/%s_%s.go", dir, ext, name)
-		err = ioutil.WriteFile(gofile, []byte(go_text), os.ModePerm)
-	}
+	gofile := fmt.Sprintf("%s/%s_%s.go", dir, ext, name)
+	err = ioutil.WriteFile(gofile, []byte(go_text), os.ModePerm)
 	return err
 }

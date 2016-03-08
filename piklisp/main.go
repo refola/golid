@@ -22,7 +22,7 @@ func main() {
 		os.Exit(1)
 	}
 	for _, file := range args {
-		err := parse.Convert(file, true)
+		err := parse.Convert(file)
 		if err != nil {
 			fmt.Printf("Error converting %s: %s\n", file, err)
 		}
