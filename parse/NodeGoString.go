@@ -104,7 +104,7 @@ func nodeProcessAction(n *Node) string {
 	first := n.first
 	var f func(*Node) string
 	switch first.content {
-	case "=", ":=", "+=", "-=", "*=", "/=":
+	case "=", ":=", "+=", "-=", "*=", "/=", "++", "--":
 		f = nodeAssign
 	case "if", "for", "switch", "select":
 		f = nodeControlBlock
