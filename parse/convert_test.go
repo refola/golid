@@ -12,7 +12,7 @@ import (
 const DEBUG = false
 
 // Wrapper function to avoid panics stopping the test
-func parsable(t *testing.T, fn string) (ret bool) {
+func convertable(t *testing.T, fn string) (ret bool) {
 	defer func() {
 		if r := recover(); r != nil {
 			t.Errorf("Panic: %s\n", r)
@@ -24,11 +24,12 @@ func parsable(t *testing.T, fn string) (ret bool) {
 			}
 		}
 	}()
-	_, err := ReadPiklisp(fn)
+	lisp, err := ReadPiklisp(fn)
 	if err != nil {
 		t.Errorf("Error processing %s:\n%s", fn, err)
 		return false
 	}
+	lisp.GoString()
 	return true
 }
 
@@ -47,7 +48,7 @@ func TestConversions(t *testing.T) {
 		failcount := 0
 		for _, f := range files {
 			filename := dir + "/" + f.Name()
-			if !parsable(t, filename) {
+			if !convertable(t, filename) {
 				t.Errorf("failed parsing %s.\n", filename)
 				failcount++
 				failures = append(failures, filename)
