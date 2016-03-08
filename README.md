@@ -16,10 +16,10 @@ TODO:
 * Make improvements based on the experience from the previous item
 
 Here's how to use this as-is:
-* Install and configure Go.
-* Run `go get github.com/refola/piklisp_go/piklisp`.
-* Run `go build github.com/refola/piklisp_go/piklisp`.
-* Run `piklisp file.{plgo|gol}` to convert `file.{plgo|gol}` into `{plgo|gol}_file.go`.
+* [Install and configure Go](https://golang.org/doc/install)
+* Run `go get github.com/refola/piklisp_go/piklisp`
+* Run `go install github.com/refola/piklisp_go/piklisp`
+* Run `piklisp file.{plgo|gol}` to convert `file.{plgo|gol}` into `{plgo|gol}_file.go`
 * Run `cd $GOPATH/src/github.com/refola/piklisp_go/piklisp` and `./test.sh` to run current tests.
 
 License:
