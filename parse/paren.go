@@ -43,6 +43,8 @@ func indentSrfi49(depthChange int, node *Node) *Node {
 		for i := depthChange; i < 0; i++ {
 			node = node.Parent()
 		}
+		// Now that we're back at the right level, we need to start a new sibling Node.
+		node = node.Parent().MakeChild()
 	case depthChange == 0:
 		// make new sibling node at same depth
 		node = node.Parent().MakeChild()
@@ -108,6 +110,10 @@ func parseString(s string, mode parseMode) (Expression, error) {
 				for s != "" && s[0] == '\t' {
 					newDepth++
 					s = s[1:]
+				}
+				if s == "" {
+					continue // Skip depth-change analysis when we're at the
+									 // end. The root Node is now complete.
 				}
 				node = indentSrfi49(newDepth-implicitParenDepth, node)
 				implicitParenDepth = newDepth
