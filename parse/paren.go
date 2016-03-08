@@ -113,10 +113,20 @@ func parseString(s string, mode parseMode) (Expression, error) {
 				}
 				if s == "" {
 					continue // Skip depth-change analysis when we're at the
-									 // end. The root Node is now complete.
+					// end. The root Node is now complete.
 				}
 				node = indentSrfi49(newDepth-implicitParenDepth, node)
 				implicitParenDepth = newDepth
+			}
+		case ';': // skip over comments and any following newlines
+			for s != "" && s[0] != '\n' {
+				s = s[1:]
+			}
+			if s != "" {
+				for s != "" && s[0] == '\n' {
+					line++
+					s = s[1:]
+				}
 			}
 		default: // must be a token
 			end := findTokenEnd(s)
