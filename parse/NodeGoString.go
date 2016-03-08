@@ -80,26 +80,9 @@ package parse
 
 import "fmt"
 
-const NODE_GOSTRING_DEBUG = true
-
-type nodeType int
-
-const (
-	topNode nodeType = iota
-	actionNode
-	valueNode
-)
-
-func (t nodeType) String() string {
-	return map[nodeType]string{
-		topNode:    "topNode",
-		actionNode: "actionNode",
-		valueNode:  "valueNode",
-	}[t]
-}
-
-// Process a top-level Node, starting from its first child
-func nodeProcessTop(first *Node) string {
+// Process a top-level Node
+func nodeProcessTop(n *Node) string {
+	first := n.first
 	var f func(*Node) string
 	switch first.content {
 	case "package":
@@ -111,20 +94,14 @@ func nodeProcessTop(first *Node) string {
 	case "func":
 		f = nodeFunc
 	default:
-		// TODO: This seems related to the f(n) or f(n.first) function
-		// call in the anonymous function inside nodeProcess. Maybe I
-		// should make a "get first" function that returns the passed node
-		// if it has non-empty content, or its first child otherwise.
 		panic("Unknown top-level node type: " + first.content)
 	}
 	return f(first)
 }
 
-// Process an action Node, starting from its first child
-func nodeProcessAction(first *Node) string {
-	if NODE_GOSTRING_DEBUG {
-		fmt.Println("About to try checking the action Node's type.")
-	}
+// Process an action Node
+func nodeProcessAction(n *Node) string {
+	first := n.first
 	var f func(*Node) string
 	switch first.content {
 	case "=", ":=", "+=", "-=", "*=", "/=":
@@ -136,19 +113,11 @@ func nodeProcessAction(first *Node) string {
 	default:
 		f = nodeFuncall
 	}
-	if NODE_GOSTRING_DEBUG {
-		fmt.Printf("About to try applying %v to the Node.\n", f)
-	}
 	return f(first)
 }
 
-// Process a value Node, notably NOT starting from its first
-// child. Value literals don't have that structure.
+// Process a value Node
 func nodeProcessValue(n *Node) string {
-	// TODO: This function's requirement of not starting from the first
-	// child does not match the other nodeProcessFoo functions. This
-	// inconsistency needs to be fixed.
-
 	if n.content != "" {
 		return n.content
 	}
@@ -164,15 +133,7 @@ func nodeProcessValue(n *Node) string {
 
 // Apply the correct node-parsing action for the given node and all
 // its same-level successors
-func nodeProcess(first *Node, t nodeType) string {
-	f, okay := map[nodeType](func(*Node) string){
-		topNode:    nodeProcessTop,
-		actionNode: nodeProcessAction,
-		valueNode:  nodeProcessValue,
-	}[t]
-	if !okay {
-		panic(fmt.Errorf("Unknown type of node: %v", t))
-	}
+func nodeProcess(first *Node, f func(*Node) string) string {
 	out := ""
 	for n := first; n != nil; n = n.next {
 		result, err := func() (out string, err error) {
@@ -181,16 +142,11 @@ func nodeProcess(first *Node, t nodeType) string {
 					err = fmt.Errorf("Recovered panic: %v", r)
 				}
 			}()
-			// TODO: Something's screwy here. I think I've made an unchecked
-			// inconsistent interface for answering "does this function want
-			// the parent Node or the first child?". Changing between n and
-			// n.first changes how the program panics on trying to get Hello
-			// World working again.
 			out = f(n)
 			return
 		}()
 		if err != nil {
-			panic(fmt.Errorf("Could not process code as %v: %v\n Got error: %v", t, n, err))
+			panic(fmt.Errorf("Could not process code: %v\n Got error: %v", n, err))
 		} else {
 			out += result + "\n"
 		}
@@ -199,7 +155,9 @@ func nodeProcess(first *Node, t nodeType) string {
 }
 
 // Convert a Node into Go code.
-func (n *Node) GoString() string { return nodeProcess(n.first, topNode) }
+func (n *Node) GoString() string {
+	return nodeProcess(n.first, nodeProcessTop)
+}
 
 // Return the contents of the given Node and its next Node, separated
 // by a space.
@@ -253,7 +211,7 @@ func nodeFunc(first *Node) string {
 	out += "(" + nodeContents(n.first) + ")"
 	// function body
 	n = n.next
-	out += "{" + nodeProcess(n.first, actionNode) + "}"
+	out += "{" + nodeProcess(n, nodeProcessAction) + "}"
 	return out
 }
 
@@ -269,14 +227,12 @@ func nodeAssign(first *Node) string {
 
 // Convert a function call into Go
 func nodeFuncall(first *Node) string {
-	if NODE_GOSTRING_DEBUG {
-		fmt.Println("Converting node into a function call:")
-		fmt.Println(first.content)
+	out := first.content + "( " // The space is a hack to make the "len(out)-1" bit not remove the "(" in a nil-adic function
+	for n := first.next; n != nil; n = n.next {
+		out += nodeProcessValue(n) + ","
 	}
-	// TODO: I think this is where everything is breaking. It needs to
-	// spit out comma-separated value parses instead of
-	// newline-separated.
-	return first.content + "(" + nodeProcess(first.next, valueNode) + ")"
+	out = out[:len(out)-1] + ")"
+	return out
 }
 
 // Convert if/for/switch/select statements into Go.
