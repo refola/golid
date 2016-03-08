@@ -11,52 +11,87 @@ import (
 // const DEBUG = true
 const DEBUG = false
 
+// Wrapper function to avoid panics stopping the test
+func parsable(t *testing.T, fn string) (ret bool) {
+	defer func() {
+		if r := recover(); r != nil {
+			t.Errorf("Panic: %s\n", r)
+			// TODO: Re-enable this after implementing the less ad-hoc GoString functions.
+			if DEBUG {
+				trace := make([]byte, 1e4)
+				i := runtime.Stack(trace, false)
+				t.Errorf("Stack trace:\n%s\n", trace[:i])
+			}
+		}
+	}()
+	_, err := ReadPiklisp(fn)
+	if err != nil {
+		t.Errorf("Error processing %s:\n%s", fn, err)
+		return false
+	}
+	return true
+}
+
 // check that each Piklisp file converts successfully to Go, without
 // crashing
 func TestConversions(t *testing.T) {
-	// Wrapper function to avoid panics stopping the test
-	parsable := func(fn string) (ret bool) {
-		defer func() {
-			if r := recover(); r != nil {
-				t.Errorf("Panic: %s\n", r)
-				// TODO: Re-enable this after implementing the less ad-hoc GoString functions.
-				if DEBUG {
-					trace := make([]byte, 1e4)
-					i := runtime.Stack(trace, false)
-					t.Errorf("Stack trace:\n%s\n", trace[:i])
-				}
-			}
-		}()
-		err := Convert(fn, false)
-		if err != nil {
-			t.Errorf("Error processing %s:\n%s", fn, err)
-			return false
-		}
-		return true
-	}
-
-	testDirs := []string{"srfi49", "classic"}
+	testdirs := []string{"srfi49", "classic"}
 	prefix := "../tests"
 	failures := []string{}
-	for _, dir := range testDirs {
+	for _, dir := range testdirs {
 		dir = prefix + "/" + dir
 		files, err := ioutil.ReadDir(dir)
 		if err != nil {
-			t.Fatal("Could not open tests folder:", err)
+			t.Fatal("could not open tests folder:", err)
 		}
 		failcount := 0
 		for _, f := range files {
 			filename := dir + "/" + f.Name()
-			if !parsable(filename) {
-				t.Errorf("Failed parsing %s.\n", filename)
+			if !parsable(t, filename) {
+				t.Errorf("failed parsing %s.\n", filename)
 				failcount++
 				failures = append(failures, filename)
 			}
 		}
-		t.Errorf("Failed to parse %d/%d test files in %s.", failcount, len(files), dir)
+		if failcount > 0 {
+			t.Errorf("failed to parse %d/%d test files in %s.", failcount, len(files), dir)
+		}
 	}
 	if len(failures) > 0 {
-		t.Errorf("Failed files: %v\n", failures)
+		t.Errorf("failed files: %v\n", failures)
+	}
+}
+
+// Check that corresponding .plgo (classic Lisp syntax) and .gol
+// (SRFI#49 syntax) files parse the same.
+func TestSrfiClassicEquality(t *testing.T) {
+	prefix := "../tests"
+	srfi := prefix + "/srfi49"
+	classic := prefix + "/classic"
+	failures := []string{}
+
+	srfiFiles, err := ioutil.ReadDir(srfi)
+	if err != nil {
+		t.Fatal("Could not open tests folder:", err)
+	}
+	failCount := 0
+	for _, f := range srfiFiles {
+		name := f.Name()
+		srfiFile := srfi + "/" + name
+		classicFile := classic + "/" + name[:len(name)-len(".gol")] + ".plgo"
+		srfiParse, err1 := ReadPiklisp(srfiFile)
+		classicParse, err2 := ReadPiklisp(classicFile)
+		if err1 == nil && err2 == nil {
+			s1, s2 := srfiParse.String(), classicParse.String()
+			if s1 != s2 {
+				failCount++
+				failures = append(failures, srfiFile)
+				t.Errorf("Got different parse results for the same program!\n%s parsed to: %s\nand %s parsed to: %s\n", srfiFile, s1, classicFile, s2)
+			}
+		}
+	}
+	if len(failures) > 0 {
+		t.Errorf("Got inconsistent parses with these %v files: %v\n", failCount, failures)
 	}
 }
 
