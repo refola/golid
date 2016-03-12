@@ -66,7 +66,9 @@ func Convert(plfile string) error {
 	}
 	go_text := parsed.GoString()
 	dir, name, ext := dirNameExt(plfile)
-	if dir == ""{	dir="."	}
+	if dir == "" {
+		dir = "."
+	}
 	gofile := fmt.Sprintf("%s/%s_%s.go", dir, ext, name)
 	err = ioutil.WriteFile(gofile, []byte(go_text), os.ModePerm)
 	return err
