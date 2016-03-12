@@ -3,6 +3,7 @@
 package parse
 
 import (
+	"fmt"
 	"io/ioutil"
 	"runtime"
 	"testing"
@@ -121,12 +122,18 @@ func TestNodeProcessValue(t *testing.T) {
 		"5":     "5",
 		`"foo"`: `"foo"`,
 	}
+	log := ""
+	defer func() {
+		if log != "" {
+			t.Fatal(log)
+		}
+	}()
 	failed := 0
 	for in, want := range cases {
-		t.Logf("Testing '%s' → '%s'", in, want)
+		log = fmt.Sprintf("%s → %s", in, want)
 		expr, err := parseString(in, srfi49)
 		if err != nil {
-			t.Errorf("Could not parse '%s'.", in)
+			t.Errorf("%s:\nCould not parse '%s'.", log, in)
 			failed++
 			continue
 		}
@@ -135,9 +142,10 @@ func TestNodeProcessValue(t *testing.T) {
 		//t.Logf("Original: %s\n", n)
 		out := nodeProcessValue(n)
 		if out != want {
-			t.Errorf("Got '%s' instead.", out)
+			t.Errorf("%s:\nGot '%s' instead.", log, out)
 			failed++
 		}
 	}
 	t.Logf("Failed %v/%v NodeProcessValue() tests.", failed, len(cases))
+	log = ""
 }
