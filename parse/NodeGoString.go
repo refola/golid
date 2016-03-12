@@ -237,8 +237,26 @@ func nodeFuncall(first *Node) string {
 
 // Convert if/for/switch/select statements into Go.
 func nodeControlBlock(first *Node) string {
-	// TODO: implement
-	panic("nodeControlBlock is unimplemented!")
+	out := ""
+	switch first.content {
+	case "if":
+		out += "if "
+		n := first.next
+		out += nodeProcessValue(n)
+		out += "{\n"
+		n = n.next
+		out += nodeProcessAction(n)
+		n = n.next
+		if n != nil { // optional "else"
+			out += "\n}else{\n"
+			out += nodeProcessAction(n)
+		}
+		out += "\n}"
+	default:
+		// TODO: implement other cases
+		panic("nodeControlBlock is unimplemented!")
+	}
+	return out
 }
 
 // Convert a Lisp math function call into Go form.
