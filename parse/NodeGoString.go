@@ -121,14 +121,15 @@ func nodeProcessValue(n *Node) string {
 	if n.content != "" {
 		return n.content
 	}
+	first := n.first
 	var f func(*Node) string
-	switch n.content {
+	switch first.content {
 	case "+", "-", "*", "/", "==", "!=", ">=", "<=", "<", ">":
 		f = nodeMath
 	default:
 		f = nodeFuncall
 	}
-	return f(n)
+	return f(first)
 }
 
 // Apply the correct node-parsing action for the given node and all
