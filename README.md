@@ -1,29 +1,34 @@
 # piklisp.go
 Program in Go with Lisp syntax
 
-This is an experimental project where I'm trying to make a basic Lisp
-that "compiles" to valid Go source code. The core goal is to learn how
-to make a Lisp. Secondary goals are letting it access all Go features,
-implementing syntactic macros, and getting rid of parentheses (both
-syntactically as in
-[SRFI#49](http://srfi.schemers.org/srfi-49/srfi-49.html) and
-semantically as in [Arc](http://www.arclanguage.org)). Even vague
-thinking beyond that will kill the primary goal's motivation, so
-that's all for now.
+This is an experimental project where I'm making a basic Lisp
+that "compiles" to valid Go source code, enabling use of Lisp
+syntactic macros with minimally-changed Go code. It currently supports
+some very basic Go programs.
 
-TODO:
-* Fix brokenness in the generalized convertor rewrite.
-* Make improvements based on the experience from the previous item
+# Wishlist
+* Stable, complete, accurate support for all the Go features it uses
+* Translation of Piklisp into itself
+* Lisp macros (with quasi-quoting)
+* More useful `GoString()` with line numbers of errors
+* Prettier output formatting
+* Comment preservation
+* An Emacs mode file for Piklisp
+* Automatic conversion of an entire source tree's Piklisp files in one fell swoop
+* Automatic conversion of Go into Piklisp syntax.
 
-Here's how to use this as-is:
-* Install and configure Go.
-* Run `go get github.com/refola/piklisp_go/piklisp`.
-* Run `go build github.com/refola/piklisp_go/piklisp`.
-* Run `piklisp file.{plgo|gol}` to convert `file.{plgo|gol}` into `{plgo|gol}_file.go`.
+# Installation
+* [Install and configure Go](https://golang.org/doc/install)
+* Run `go get github.com/refola/piklisp_go/piklisp`
+* Run `go install github.com/refola/piklisp_go/piklisp`
+* Run `piklisp file.{plgo|gol}` to convert `file.{plgo|gol}` into `{plgo|gol}_file.go`
 * Run `cd $GOPATH/src/github.com/refola/piklisp_go/piklisp` and `./test.sh` to run current tests.
 
-License:
+# More info
+* [Credits](credit.md)
+* [Motivation/history](motivation.md)
 
+# License
 This is licensed as GPLv3 because that's the most restrictive
 license GitHub offers by default. I know that this is an inappropriate
 license for something resembling a programming language. If for some
