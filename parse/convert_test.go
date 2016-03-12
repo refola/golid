@@ -33,32 +33,24 @@ func convertable(t *testing.T, fn string) (ret bool) {
 	return true
 }
 
-// check that each Piklisp file converts successfully to Go, without
+// check that each Piklisp files convert successfully to Go, without
 // crashing
 func TestConversions(t *testing.T) {
-	testdirs := []string{"srfi49", "classic"}
-	prefix := "../tests"
+	dir := "../tests/classic" // only test this dir because TestSrfiClassicEquality() checks that this produces an identical parse to srfi49 testing
+	files, err := ioutil.ReadDir(dir)
+	if err != nil {
+		t.Fatal("could not open tests folder:", err)
+	}
 	failures := []string{}
-	for _, dir := range testdirs {
-		dir = prefix + "/" + dir
-		files, err := ioutil.ReadDir(dir)
-		if err != nil {
-			t.Fatal("could not open tests folder:", err)
-		}
-		failcount := 0
-		for _, f := range files {
-			filename := dir + "/" + f.Name()
-			if !convertable(t, filename) {
-				t.Errorf("failed parsing %s.\n", filename)
-				failcount++
-				failures = append(failures, filename)
-			}
-		}
-		if failcount > 0 {
-			t.Errorf("failed to parse %d/%d test files in %s.", failcount, len(files), dir)
+	for _, f := range files {
+		filename := dir + "/" + f.Name()
+		if !convertable(t, filename) {
+			t.Errorf("failed parsing %s.\n", filename)
+			failures = append(failures, filename)
 		}
 	}
-	if len(failures) > 0 {
+	if t.Failed() {
+		t.Errorf("failed to parse %d/%d test files in %s.", len(failures), len(files), dir)
 		t.Errorf("failed files: %v\n", failures)
 	}
 }
