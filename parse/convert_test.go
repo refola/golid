@@ -111,3 +111,33 @@ func TestDirNameExt(t *testing.T) {
 	}
 	t.Logf("Failed %v/%v tests.", failed, len(cases))
 }
+
+func TestNodeProcessValue(t *testing.T) {
+	cases := map[string]string{
+		"(< n 2)":                         "(n < 2)",
+		"(- n 1)":                         "(n - 1)",
+		"(fib (- n 1))":                   "fib((n - 1))",
+		"(+ (fib (- n 1)) (fib (- n 2)))": "(fib((n - 1)) + fib((n - 2)))",
+		"5":     "5",
+		`"foo"`: `"foo"`,
+	}
+	failed := 0
+	for in, want := range cases {
+		t.Logf("Testing '%s' → '%s'", in, want)
+		expr, err := parseString(in, srfi49)
+		if err != nil {
+			t.Errorf("Could not parse '%s'.", in)
+			failed++
+			continue
+		}
+		// ".first" gets rid of top-level parens added by parseString()
+		n := expr.(*Node)
+		//t.Logf("Original: %s\n", n)
+		out := nodeProcessValue(n)
+		if out != want {
+			t.Errorf("Got '%s' instead.", out)
+			failed++
+		}
+	}
+	t.Logf("Failed %v/%v NodeProcessValue() tests.", failed, len(cases))
+}
