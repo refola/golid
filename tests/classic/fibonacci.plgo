@@ -8,4 +8,4 @@
 		(return (+ (fib (- n 1)) (fib (- n 2))))))
 
 (func main () ()
-	(fmt.Printf "fib(5)==%s" (fib 5)))
+	(fmt.Printf "fib(5)==%v\n" (fib 5)))

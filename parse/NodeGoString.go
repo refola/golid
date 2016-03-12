@@ -163,7 +163,8 @@ func (n *Node) GoString() string {
 // Return the contents of the given Node and its next Node, separated
 // by a space.
 func nodeUnparenTwo(first *Node) string {
-	return first.content + " " + first.next.content
+	// TODO: Should have single "unparen" function
+	return nodeProcessValue(first) + " " + nodeProcessValue(first.next)
 }
 
 // Convert an import Node into a Go import command.
@@ -264,8 +265,8 @@ func nodeControlBlock(first *Node) string {
 func nodeMath(first *Node) string {
 	op := first.content
 	n := first.next
-	lhs := n.content
+	lhs := n
 	n = n.next
-	rhs := n.content
-	return "(" + lhs + " " + op + " " + rhs + ")"
+	rhs := n
+	return "(" + nodeProcessValue(lhs) + " " + op + " " + nodeProcessValue(rhs) + ")"
 }
