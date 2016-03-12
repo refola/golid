@@ -138,5 +138,9 @@ func parseString(s string, mode parseMode) (Expression, error) {
 			}
 		}
 	}
+	// If this was already wrapped in parens, drop the implicit ones
+	if root.first == root.last {
+		root = root.first
+	}
 	return root, nil
 }
