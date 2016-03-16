@@ -25,8 +25,8 @@ some very basic Go programs.
 * Run `cd $GOPATH/src/github.com/refola/piklisp_go/piklisp` and `./test.sh` to run current tests.
 
 # More info
-* [Credits](credit.md)
-* [Motivation/history](motivation.md)
+* [Credits](doc/credit.md)
+* [Motivation/history](doc/motivation.md)
 
 # License
 This is licensed as GPLv3 because that's the most restrictive
