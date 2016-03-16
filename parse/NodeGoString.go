@@ -237,23 +237,31 @@ func nodeFuncall(first *Node) string {
 	return out
 }
 
+// return text representing a an "if condition { stuff() ... }" block
+func nodeIfCase(first *Node) string {
+	out := ""
+	if first.content == "else" {
+		out += " {\n"
+	} else {
+		out += "if " + nodeProcessValue(first) + " {\n"
+	}
+	for n := first.next; n != nil; n = n.next {
+		out += nodeProcessAction(n) + "\n"
+	}
+	out += "}"
+	return out
+}
+
 // Convert if/for/switch/select statements into Go.
 func nodeControlBlock(first *Node) string {
 	out := ""
 	switch first.content {
 	case "if":
-		out += "if "
 		n := first.next
-		out += nodeProcessValue(n)
-		out += "{\n"
-		n = n.next
-		out += nodeProcessAction(n)
-		n = n.next
-		if n != nil { // optional "else"
-			out += "\n}else{\n"
-			out += nodeProcessAction(n)
+		out += nodeIfCase(n.first)
+		for n = n.next; n != nil; n = n.next {
+			out += "else " + nodeIfCase(n.first)
 		}
-		out += "\n}"
 	default:
 		// TODO: implement other cases
 		panic("nodeControlBlock is unimplemented!")

@@ -2,7 +2,7 @@
 ; Test code for generalized "if", acting as a merger between if/switch/cond.
 package main
 import "fmt"
-func foo () ()
+func foo () (bool)
 	return true
 
 func main () ()
@@ -12,7 +12,7 @@ func main () ()
 	if
 		false
 			panic "false happened"
-		true
+		else
 			fmt.Println "even if it's after false"
 	if
 		(foo)
@@ -22,9 +22,9 @@ func main () ()
 			panic "false happened"
 		false
 			panic "false happened"
-		true
+		else
 			fmt.Println "or after multiple falses"
 	if
 		true
-			fmt.Printf "or when it's on"
+			fmt.Printf "or when it's on "
 			fmt.Println "multiple lines"
