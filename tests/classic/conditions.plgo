@@ -1,0 +1,30 @@
+; conditions.plgo
+; Test code for generalized "if", acting as a merger between if/switch/cond.
+(package "main")
+(import fmt)
+(func foo () ()
+	(return true))
+
+(func main () ()
+	(if
+		(true
+			(fmt.Println "true happens")))
+	(if
+		(false
+			(panic "false happened"))
+		(true
+			(fmt.Println "even if it's after false")))
+	(if
+		((foo)
+			(fmt.Println "or if it's from a function")))
+	(if
+		(false
+			(panic "false happened"))
+		(false
+			(panic "false happened"))
+		(true
+			(fmt.Println "or after multiple falses")))
+	(if
+		(true
+			(fmt.Printf "or when it's on")
+			(fmt.Println "multiple lines"))))
