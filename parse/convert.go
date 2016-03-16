@@ -5,7 +5,6 @@ package parse
 import (
 	"fmt"
 	"io/ioutil"
-	"os"
 )
 
 const plgo = "plgo" // praenthesized version of Piklisp-Go
@@ -70,6 +69,6 @@ func Convert(plfile string) error {
 		dir = "."
 	}
 	gofile := fmt.Sprintf("%s/%s_%s.go", dir, ext, name)
-	err = ioutil.WriteFile(gofile, []byte(go_text), os.ModePerm)
+	err = ioutil.WriteFile(gofile, []byte(go_text), 0644)
 	return err
 }
