@@ -20,9 +20,8 @@ some very basic Go programs.
 # Installation
 * [Install and configure Go](https://golang.org/doc/install)
 * Run `go get github.com/refola/piklisp_go/piklisp`
-* Run `go install github.com/refola/piklisp_go/piklisp`
+* Run `go install github.com/refola/piklisp_go/cmd/piklisp` or, from the repository root, run `./install.sh`
 * Run `piklisp file.{plgo|gol}` to convert `file.{plgo|gol}` into `{plgo|gol}_file.go`
-* Run `cd $GOPATH/src/github.com/refola/piklisp_go/piklisp` and `./test.sh` to run current tests.
 
 # More info
 * [Credits](doc/credit.md)
