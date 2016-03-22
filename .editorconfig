@@ -1,0 +1,23 @@
+# EditorConfig file. See editorconfig.org for what this is.
+
+# This file is at the top level of the code repository.
+root=true
+
+# Apply to all source.
+[*]
+
+# Tabs are a zillion times nicer than spaces.
+indent_style=tab
+
+# 8 spaces wide is too much. I don't actually care what size you view
+# tabs as in your code editor (I use 2, but I also use dotsies instead
+# of a monospace font...) if you contribute to this project, but this
+# is necessary for GitHub to display tabs "correctly". I'm setting
+# this to 3 for now.
+indent_size=3
+
+# Make the invisible stuff consistent.
+end_of_line=lf
+charset=utf-8
+trim_trailing_whitespace=true
+insert_final_newline=true
