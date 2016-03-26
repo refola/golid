@@ -6,6 +6,7 @@ import (
 	"fmt"
 	"io/ioutil"
 	"runtime"
+	"strings"
 	"testing"
 )
 
@@ -34,58 +35,96 @@ func convertable(t *testing.T, fn string) (ret bool) {
 	return true
 }
 
-// check that each Piklisp files convert successfully to Go, without
+// check that each Piklisp file converts successfully to Go, without
 // crashing
 func TestConversions(t *testing.T) {
-	dir := "../tests/classic" // only test this dir because TestSrfiClassicEquality() checks that this produces an identical parse to srfi49 testing
-	files, err := ioutil.ReadDir(dir)
+	root := "../tests"
+	dirs, err := ioutil.ReadDir(root)
 	if err != nil {
 		t.Fatal("could not open tests folder:", err)
 	}
-	failures := []string{}
-	for _, f := range files {
-		filename := dir + "/" + f.Name()
-		if !convertable(t, filename) {
-			t.Errorf("failed parsing %s.\n", filename)
-			failures = append(failures, filename)
+	failures := []string{} // list of cases that failed
+	nFiles := 0            // how many files were tested
+	for _, d := range dirs {
+		dirName := root + "/" + d.Name()
+		t.Logf("Testing '%s'.", dirName)
+		dir, err := ioutil.ReadDir(dirName)
+		if err != nil {
+			t.Errorf("could not open tests folder:", err)
+			continue
+		}
+		for _, f := range dir {
+			filename := dirName + "/" + f.Name()
+			if !strings.HasSuffix(filename, ".gol") {
+				continue
+			}
+			nFiles++
+			if !convertable(t, filename) {
+				t.Errorf("failed parsing %s.\n", filename)
+				failures = append(failures, filename)
+			}
 		}
 	}
 	if t.Failed() {
-		t.Errorf("failed to parse %d/%d test files in %s.", len(failures), len(files), dir)
+		t.Errorf("failed to parse %d/%d test files in %s.", len(failures), nFiles, root)
 		t.Errorf("failed files: %v\n", failures)
 	}
 }
 
-// Check that corresponding .plgo (classic Lisp syntax) and .gol
-// (SRFI#49 syntax) files parse the same.
-func TestSrfiClassicEquality(t *testing.T) {
-	prefix := "../tests"
-	srfi := prefix + "/srfi49"
-	classic := prefix + "/classic"
-	failures := []string{}
+// Convert filename to parsed Piklisp string, returning an error
+// string that's invalid Piklisp on failure.
+func fileToParseString(filename string) (ret string) {
+	defer func() {
+		if r := recover(); r != nil {
+			ret = "Failed converting " + filename + " to parse string. Result is:\n" + ret
+		}
+	}()
+	parse, err := ReadPiklisp(filename)
+	if err != nil {
+		return "Could not parse " + filename + "."
+	}
+	ret = parse.String()
+	return
+}
 
-	srfiFiles, err := ioutil.ReadDir(srfi)
+// Check that corresponding Piklisp files (i.e., in .gol files in the
+// same test folder) parse the same.
+func TestParseEquality(t *testing.T) {
+	root := "../tests"
+	dirs, err := ioutil.ReadDir(root)
 	if err != nil {
 		t.Fatal("Could not open tests folder:", err)
 	}
-	failCount := 0
-	for _, f := range srfiFiles {
-		name := f.Name()
-		srfiFile := srfi + "/" + name
-		classicFile := classic + "/" + name[:len(name)-len(".gol")] + ".plgo"
-		srfiParse, err1 := ReadPiklisp(srfiFile)
-		classicParse, err2 := ReadPiklisp(classicFile)
-		if err1 == nil && err2 == nil {
-			s1, s2 := srfiParse.String(), classicParse.String()
-			if s1 != s2 {
-				failCount++
-				failures = append(failures, srfiFile)
-				t.Errorf("Got different parse results for the same program!\n%s parsed to: %s\nand %s parsed to: %s\n", srfiFile, s1, classicFile, s2)
+	failures := []string{} // list of folders that failed
+	for _, d := range dirs {
+		dirName := root + "/" + d.Name()
+		dir, err := ioutil.ReadDir(dirName)
+		if err != nil {
+			t.Errorf("could not open tests folder:", err)
+			continue
+		}
+		parseString := ""
+		firstFile := ""
+		for _, f := range dir {
+			filename := dirName + "/" + f.Name()
+			if !strings.HasSuffix(filename, ".gol") {
+				continue
+			}
+			if firstFile == "" {
+				firstFile = filename
+			}
+			s := fileToParseString(filename)
+			if parseString == "" {
+				parseString = s
+			}
+			if s != parseString {
+				failures = append(failures, dirName)
+				t.Errorf("Got multiple parse results for the same program!\n%s parsed to: %s\nand %s parsed to: %s\n", firstFile, parseString, filename, s)
 			}
 		}
 	}
 	if len(failures) > 0 {
-		t.Errorf("Got inconsistent parses with these %v files: %v\n", failCount, failures)
+		t.Errorf("Got inconsistent parses with these %v programs: %v\n", len(failures), failures)
 	}
 }
 
