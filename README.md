@@ -21,7 +21,7 @@ some very basic Go programs.
 * [Install and configure Go](https://golang.org/doc/install)
 * Run `go get github.com/refola/piklisp_go/piklisp`
 * Run `go install github.com/refola/piklisp_go/cmd/piklisp` or, from the repository root, run `./install.sh`
-* Run `piklisp file.{plgo|gol}` to convert `file.{plgo|gol}` into `{plgo|gol}_file.go`
+* Run `piklisp file.gol` to convert `file.gol` into `gol_file.go`
 
 # More info
 * [Credits](doc/credit.md)
