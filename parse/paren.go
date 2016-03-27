@@ -3,7 +3,6 @@
 package parse
 
 import (
-	"errors"
 	"fmt"
 	"regexp"
 )
@@ -59,88 +58,98 @@ func indentSrfi49(depthChange int, node *Node) *Node {
 	return node
 }
 
-// what type of parsing we're doing
-type parseMode int
+// Parse a Piklisp string into its syntax tree, automatically
+// determining which top-level blocks of code use which syntax.
+func parseString(s string) (Expression, error) {
+	root := Root() // top-level node
 
-const (
-	classic = parseMode(iota)
-	srfi49
-)
-
-// Parse a Piklisp string into ints AST representation
-func parseString(s string, mode parseMode) (Expression, error) {
-	// setup everything
-	line := 0 // which line was last reached
-
-	// convenience "exit while showing error and line number" function
-	err := func(s string) (Expression, error) {
-		return nil, errors.New(fmt.Sprintf("Line %s: %v", line, s))
-	}
-
-	implicitParenDepth := 0 // how many layers of parentheses are currently elided
-	root := Root()          // the top-level node to return
-	node := root            // the active node being parsed
-	if mode == srfi49 {
-		// here there are no extra parens to start the first subnode
-		node = node.MakeChild()
-	}
-
-	// keep going until the string's empty
-	for s != "" {
-		switch s[0] {
-		case '(': // go a level deeper
-			node = node.MakeChild()
-			s = s[1:]
-		case ')': // go back up a level
-			node = node.Parent()
-			s = s[1:]
-		case ' ', '\t': // ignored whitespace
-			s = s[1:]
-		case '\n': // either whitespace or marking srfi49 checks
-			// absorb all consecutive newlines so blank lines can be used as
-			// separation inside an indented group
-			for s != "" && s[0] == '\n' {
-				line++
+	// process a top-level node
+	doTopNode := func() error {
+		isens := true // Indentation SENSitivity
+		if s[0] == '(' {
+			isens = false
+			s = s[1:] // don't make the same node twice
+		}
+		tabDepth := 0 // for indent-grouping syntax
+		n := root.MakeChild()
+	loop: // go until break or out of code
+		for s != "" {
+			switch s[0] {
+			case '(': // go deeper
+				n = n.MakeChild()
 				s = s[1:]
-			}
-			if mode == classic {
-				continue
-			} else {
+			case ')': // go up
+				n = n.Parent()
+				s = s[1:]
+			case ' ', '\t': // ignore mid-line whitespace
+				s = s[1:]
+			case '\n': // whitespace, but may end node
+				// get to the good stuff
+				for s != "" && s[0] == '\n' {
+					s = s[1:]
+				}
+				if !isens { // paren-only syntax
+					if n == root {
+						break loop
+					} else {
+						continue loop
+					}
+				}
+				if s == "" || s[0] != '\t' {
+					break loop
+				}
 				newDepth := 0
 				for s != "" && s[0] == '\t' {
 					newDepth++
 					s = s[1:]
 				}
-				if s == "" {
-					continue // Skip depth-change analysis when we're at the
-					// end. The root Node is now complete.
-				}
-				node = indentSrfi49(newDepth-implicitParenDepth, node)
-				implicitParenDepth = newDepth
-			}
-		case ';': // skip over comments and any following newlines
-			for s != "" && s[0] != '\n' {
-				s = s[1:]
-			}
-			if s != "" {
-				for s != "" && s[0] == '\n' {
-					line++
+				n = indentSrfi49(newDepth-tabDepth, n)
+				tabDepth = newDepth
+			case ';': // skip rest of line
+				for s != "" && s[0] != '\n' {
 					s = s[1:]
 				}
+			default: // must be a token, finally
+				end := findTokenEnd(s)
+				if end < 0 {
+					return fmt.Errorf("Could not find end of token %s.", s)
+				} else {
+					n.AddToken(s[0:end])
+					s = s[end:]
+				}
 			}
-		default: // must be a token
-			end := findTokenEnd(s)
-			if end < 0 {
-				return err("could not find end of token: " + s)
-			} else {
-				node.AddToken(s[0:end])
-				s = s[end:]
+		}
+		return nil
+	}
+
+	// process the entire string
+	for s != "" {
+		// get to a top-level block
+		switch s[0] {
+		case ' ', '\t': // whitespace to skip
+			// TODO: handle " (" case of indent-grouped syntax starting with
+			// a paren group. I think it's the only case where unified
+			// parsing doesn't automatically detect correctly between
+			// classic and indent Lisp syntaxes.
+			s = s[1:]
+		case '\n': // newline to note and pass
+			s = s[1:]
+		case ';': // comment to skip
+			for s[0] != '\n' {
+				s = s[1:]
+			}
+		default: // we've reached the next node
+			err := doTopNode()
+			if err != nil {
+				return nil, err
 			}
 		}
 	}
-	// Remove all extra layers
+
+	// remove extra layers (e.g., if this was ran for less than a file)
 	for root != nil && root.first == root.last && root.content == "" {
 		root = root.first
 	}
+
 	return root, nil
 }

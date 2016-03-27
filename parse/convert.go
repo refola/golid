@@ -7,9 +7,6 @@ import (
 	"io/ioutil"
 )
 
-const plgo = "plgo" // praenthesized version of Piklisp-Go
-const gol = "gol"   // less parens extension
-
 // split path into directory, filename, and extension, based on
 // right-most '.' and '/' characters, and omitting said separators
 func dirNameExt(path string) (string, string, string) {
@@ -41,12 +38,7 @@ func dirNameExt(path string) (string, string, string) {
 // Read a file into a Piklisp syntax tree
 func ReadPiklisp(plfile string) (Expression, error) {
 	_, _, ext := dirNameExt(plfile)
-	mode := classic
-	switch ext {
-	case plgo: // valid case, but we already have its parseFn set
-	case gol:
-		mode = srfi49
-	default:
+	if ext != "gol" {
 		return nil, fmt.Errorf("File %s has non-Piklisp extension %s", plfile, ext)
 	}
 	lispBytes, err := ioutil.ReadFile(plfile)
@@ -54,10 +46,10 @@ func ReadPiklisp(plfile string) (Expression, error) {
 		return nil, err
 	}
 	lispText := string(lispBytes)
-	return parseString(lispText, mode)
+	return parseString(lispText)
 }
 
-// Convert a Piklisp file into Go. It uses normal Lisp syntax if the extension is .plgo and SRFI#49 if the extension is .gol.
+// Convert a Piklisp file into Go.
 func Convert(plfile string) error {
 	parsed, err := ReadPiklisp(plfile)
 	if err != nil {
@@ -66,6 +58,7 @@ func Convert(plfile string) error {
 	go_text := parsed.GoString()
 	dir, name, ext := dirNameExt(plfile)
 	if dir == "" {
+		// make sure that following dir with "/" doesn't change semantics
 		dir = "."
 	}
 	gofile := fmt.Sprintf("%s/%s_%s.go", dir, ext, name)

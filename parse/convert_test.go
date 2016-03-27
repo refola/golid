@@ -170,7 +170,7 @@ func TestNodeProcessValue(t *testing.T) {
 	failed := 0
 	for in, want := range cases {
 		log = fmt.Sprintf("%s → %s", in, want)
-		expr, err := parseString(in, srfi49)
+		expr, err := parseString(in)
 		if err != nil {
 			t.Errorf("%s:\nCould not parse '%s'.", log, in)
 			failed++
@@ -178,7 +178,6 @@ func TestNodeProcessValue(t *testing.T) {
 		}
 		// ".first" gets rid of top-level parens added by parseString()
 		n := expr.(*Node)
-		//t.Logf("Original: %s\n", n)
 		out := nodeProcessValue(n)
 		if out != want {
 			t.Errorf("%s:\nGot '%s' instead.", log, out)
