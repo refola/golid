@@ -11,7 +11,7 @@ test-dir() {
 			echo "Testing $f."
 			f="${f/.\//}" # strip leading ./
 			echo -e "\nRunning $f:"
-			piklisp "$f" # convert to Go
+			golid "$f" # convert to Go
 			out="gol_${f/.gol/}.go"
 			go run "$out" # run and remove generated file
 			rm "$out"
