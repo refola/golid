@@ -24,8 +24,9 @@ some very basic Go programs.
 * Run `golid file.gol` to convert `file.gol` into `gol_file.go`
 
 # More info
-* [Credits](doc/credit.md)
-* [Motivation/history](doc/motivation.md)
+* [Wiki](https://github.com/refola/golid/wiki)
+* [Credits](https://github.com/refola/golid/wiki/credits)
+* [Motivation/history](https://github.com/refola/golid/wiki/motivation)
 
 # Lisp-iness disclaimer
 I am most definitely not a Lisp wizard. I'm just a programmer who like's Go's general simplicity and Lisp's macros. If you are a Lisp wizard, then I would appreciate your advice for how to implement things more easily or more cleanly. *However*, please keep in mind that this is not a "make Lisp like Go" project. This is a "steal Lisp magic and give it to Go" project. As such, as much as possible will come from Go instead of Lisp. For example, this project uses Go's `=` and `:=` for setting variables; there is no `let` or `setf`. If you want a proper Lisp to use with Go, then go [here](https://github.com/glycerine/zygomys).
