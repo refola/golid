@@ -19,9 +19,9 @@ some very basic Go programs.
 
 # Installation
 * [Install and configure Go](https://golang.org/doc/install)
-* Run `go get github.com/refola/piklisp_go/piklisp`
-* Run `go install github.com/refola/piklisp_go/cmd/piklisp` or, from the repository root, run `./install.sh`
-* Run `piklisp file.gol` to convert `file.gol` into `gol_file.go`
+* Run `go get github.com/refola/golid/cmd/golid`
+* Run `go install github.com/refola/golid/cmd/golid` or, from the repository root, run `./install.sh`
+* Run `golid file.gol` to convert `file.gol` into `gol_file.go`
 
 # More info
 * [Credits](doc/credit.md)
