@@ -1,0 +1,21 @@
+(package main)
+
+(import "fmt")
+
+(func main () ()
+	(:= x "foo")
+	(switch x
+		("foo"
+			(fmt.Println "first case matches var")))
+	(= x "bar")
+	(switch x
+		("foo"
+			(panic "x should not be 'foo' anymore!"))
+		("bar"
+			(fmt.Println "second case matches var")))
+	(= x "baz")
+	(switch x
+		(("foo" "bar"):
+			(panic "x should not be 'foo' or 'bar' anymore!"))
+		(default
+			(fmt.Println "neither case matches var"))))
