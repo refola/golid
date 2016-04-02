@@ -15,7 +15,7 @@
 			(fmt.Println "second case matches var")))
 	(= x "baz")
 	(switch x
-		(("foo" "bar"):
+		(("foo" "bar")
 			(panic "x should not be 'foo' or 'bar' anymore!"))
 		(default
 			(fmt.Println "neither case matches var"))))
