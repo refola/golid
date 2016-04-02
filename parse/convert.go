@@ -1,4 +1,4 @@
-// Convenience functions to convert Piklisp files into Go files
+// Convenience functions to convert Golid files into Go files
 
 package parse
 
@@ -35,11 +35,11 @@ func dirNameExt(path string) (string, string, string) {
 	return dir, name, ext
 }
 
-// Read a file into a Piklisp syntax tree
-func ReadPiklisp(plfile string) (Expression, error) {
+// Read a file into a Golid syntax tree
+func ReadGolid(plfile string) (Expression, error) {
 	_, _, ext := dirNameExt(plfile)
 	if ext != "gol" {
-		return nil, fmt.Errorf("File %s has non-Piklisp extension %s", plfile, ext)
+		return nil, fmt.Errorf("File %s has non-Golid extension %s", plfile, ext)
 	}
 	lispBytes, err := ioutil.ReadFile(plfile)
 	if err != nil {
@@ -49,9 +49,9 @@ func ReadPiklisp(plfile string) (Expression, error) {
 	return parseString(lispText)
 }
 
-// Convert a Piklisp file into Go.
+// Convert a Golid file into Go.
 func Convert(plfile string) error {
-	parsed, err := ReadPiklisp(plfile)
+	parsed, err := ReadGolid(plfile)
 	if err != nil {
 		return err
 	}

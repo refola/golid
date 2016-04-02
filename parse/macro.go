@@ -1,6 +1,6 @@
-/* Macro processing for Piklisp-Go
+/* Macro processing for Golid-Go
 
-Piklisp needs to have macros to be a proper Lisp. However, for Piklisp
+Golid needs to have macros to be a proper Lisp. However, for Golid
 to still be "Go" and not merely "Go-integrated", it must process the
 macros away such that the "compiled" result is pure Go. Thus the top
 priority macro is "go-mac", which defines macros that turn into Go

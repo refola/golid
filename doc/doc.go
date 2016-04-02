@@ -1,5 +1,5 @@
 /*
-Piklisp is an experiment in learning how to make a Lisp that compiles to another programming language, effectively combining Lisp syntax and macros with whatever features the target language has. Package group piklisp/* contains the Go implementation. See piklisp-go/piklisp for the command.
+Golid is an experiment in learning how to make a Lisp that compiles to another programming language, effectively combining Lisp syntax and macros with whatever features the target language has. Package group golid/* contains the Go implementation. See golid/golid for the command.
 
 Minimal grammar to parse Hello World
 
@@ -16,7 +16,7 @@ The beginning and end of a file implicitly group everything inside.
 
 Hello World example
 
-Here's what I think the first working Hello World in piklisp_go will look like. Later versions should be more concise.
+Here's what I think the first working Hello World in golid will look like. Later versions should be more concise.
   (package main)
   (import "fmt")
   (func main () () (
@@ -59,4 +59,4 @@ This trivial example should output something like this.
 
 This type of "see what is producing the value and the value it produces" macro is extremely useful for debugging and demonstrating what bits of code produce. The power of Lisp is necessary to do this without code duplication.
 */
-package piklisp_go
+package golid

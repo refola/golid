@@ -1,5 +1,5 @@
 #!/bin/bash
-# Run all the .plgo tests to make sure they do what they're meant to.
+# Run all the .gol tests to make sure they do what they're meant to.
 
 ## Usage: test-dir directory
 # Tests every .gol file in given directory

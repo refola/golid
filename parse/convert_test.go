@@ -1,4 +1,4 @@
-// automatically test converting several files from Piklisp Go to Go
+// automatically test converting several files from Golid to Go
 
 package parse
 
@@ -26,7 +26,7 @@ func convertable(t *testing.T, fn string) (ret bool) {
 			}
 		}
 	}()
-	lisp, err := ReadPiklisp(fn)
+	lisp, err := ReadGolid(fn)
 	if err != nil {
 		t.Errorf("Error processing %s:\n%s", fn, err)
 		return false
@@ -35,7 +35,7 @@ func convertable(t *testing.T, fn string) (ret bool) {
 	return true
 }
 
-// check that each Piklisp file converts successfully to Go, without
+// check that each Golid file converts successfully to Go, without
 // crashing
 func TestConversions(t *testing.T) {
 	root := "../tests"
@@ -71,15 +71,15 @@ func TestConversions(t *testing.T) {
 	}
 }
 
-// Convert filename to parsed Piklisp string, returning an error
-// string that's invalid Piklisp on failure.
+// Convert filename to parsed Golid string, returning an error
+// string that's invalid Golid on failure.
 func fileToParseString(filename string) (ret string) {
 	defer func() {
 		if r := recover(); r != nil {
 			ret = "Failed converting " + filename + " to parse string. Result is:\n" + ret
 		}
 	}()
-	parse, err := ReadPiklisp(filename)
+	parse, err := ReadGolid(filename)
 	if err != nil {
 		return "Could not parse " + filename + "."
 	}
@@ -87,7 +87,7 @@ func fileToParseString(filename string) (ret string) {
 	return
 }
 
-// Check that corresponding Piklisp files (i.e., in .gol files in the
+// Check that corresponding Golid files (i.e., in .gol files in the
 // same test folder) parse the same.
 func TestParseEquality(t *testing.T) {
 	root := "../tests"

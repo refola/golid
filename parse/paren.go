@@ -58,7 +58,7 @@ func indentSrfi49(depthChange int, node *Node) *Node {
 	return node
 }
 
-// Parse a Piklisp string into its syntax tree, automatically
+// Parse a Golid string into its syntax tree, automatically
 // determining which top-level blocks of code use which syntax.
 func parseString(s string) (Expression, error) {
 	root := Root() // top-level node

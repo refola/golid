@@ -1,4 +1,4 @@
-# piklisp.go
+# Golid
 Program in Go with Lisp syntax
 
 This is an experimental project where I'm making a basic Lisp
@@ -8,14 +8,14 @@ some very basic Go programs.
 
 # Wishlist
 * Stable, complete, accurate support for all the Go features it uses
-* Translation of Piklisp into itself
+* Translation of Golid into itself
 * Lisp macros (with quasi-quoting)
 * More useful `GoString()` with line numbers of errors
 * Prettier output formatting
 * Comment preservation
-* An Emacs mode file for Piklisp
-* Automatic conversion of an entire source tree's Piklisp files in one fell swoop
-* Automatic conversion of Go into Piklisp syntax.
+* An Emacs mode file for Golid
+* Automatic conversion of an entire source tree's Golid files in one fell swoop
+* Automatic conversion of Go into Golid syntax.
 
 # Installation
 * [Install and configure Go](https://golang.org/doc/install)
