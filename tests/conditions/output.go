@@ -2,7 +2,7 @@ package main
 
 import "fmt"
 
-func foo() {
+func foo() bool {
 	return true
 }
 
