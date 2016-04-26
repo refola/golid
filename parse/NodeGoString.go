@@ -237,18 +237,46 @@ func nodeFuncall(first *Node) string {
 	return out
 }
 
-// return text representing a an "if condition { stuff() ... }" block
-func nodeIfCase(first *Node) string {
+// return text representing an "if condition { stuff() ... }" block
+func nodeIfCase(firstCond *Node) string {
 	out := ""
-	if first.content == "else" {
+	if firstCond.content == "else" {
 		out += " {\n"
 	} else {
-		out += "if " + nodeProcessValue(first) + " {\n"
+		out += "if " + nodeProcessValue(firstCond) + " {\n"
 	}
-	for n := first.next; n != nil; n = n.next {
+	for n := firstCond.next; n != nil; n = n.next {
 		out += nodeProcessAction(n) + "\n"
 	}
 	out += "}"
+	return out
+}
+
+// return text representing a "for pre-statement; condition; post-statement { stuff() ... }" block of any type
+func nodeForCase(controlClause *Node) string {
+	out := "for "
+	n := controlClause
+	// get header
+	switch {
+	case n.content != "": // Golid for loops must paren the control clause.
+		panic("Invalid 'for' control clause: \"" + n.String() + "\"!")
+	case n.first == nil: // "()" case ('infinite' loop)
+		out += "{\n"
+	case n.first.content == "range": // "(range ...)" case
+		panic("nodeForCase: 'range' isn't implemented!")
+	case n.first.content != "": // "(condition)" case ('while' loop)
+		out += nodeProcessValue(n.first) + "{\n"
+	case n.first.first != nil: // "((pre) (cond) (post))" case ('for' loop)
+		out += nodeAssign(n.first) + "; " + nodeProcessValue(n.first.next) + "; " + nodeProcessAction(n.first.next.next) + " {\n"
+	default:
+		panic("nodeForCase: Unhandled case!")
+	}
+	// go through body
+	for n = n.next; n != nil; n = n.next {
+		out += nodeProcessAction(n) + "\n"
+	}
+	// end brace
+	out += "}\n"
 	return out
 }
 
@@ -262,9 +290,12 @@ func nodeControlBlock(first *Node) string {
 		for n = n.next; n != nil; n = n.next {
 			out += "else " + nodeIfCase(n.first)
 		}
+	case "for":
+		out += nodeForCase(first.next)
+	//case "switch":
 	default:
 		// TODO: implement other cases
-		panic("nodeControlBlock is unimplemented!")
+		panic("nodeControlBlock is unimplemented for '" + first.content + "'!")
 	}
 	return out
 }
