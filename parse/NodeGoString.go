@@ -265,9 +265,9 @@ func nodeForCase(controlClause *Node) string {
 	case n.first.content == "range": // "(range ...)" case
 		panic("nodeForCase: 'range' isn't implemented!")
 	case n.first.content != "": // "(condition)" case ('while' loop)
-		out += nodeProcessValue(n.first) + "{\n"
+		out += nodeProcessValue(n) + "{\n"
 	case n.first.first != nil: // "((pre) (cond) (post))" case ('for' loop)
-		out += nodeAssign(n.first) + "; " + nodeProcessValue(n.first.next) + "; " + nodeProcessAction(n.first.next.next) + " {\n"
+		out += nodeAssign(n.first.first) + "; " + nodeProcessValue(n.first.next) + "; " + nodeProcessAction(n.first.next.next) + " {\n"
 	default:
 		panic("nodeForCase: Unhandled case!")
 	}
