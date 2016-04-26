@@ -108,8 +108,8 @@ func nodeProcessAction(n *Node) string {
 		f = nodeAssign
 	case "if", "for", "switch", "select":
 		f = nodeControlBlock
-	case "return": // TODO: This needs to handle more than one thing following return.
-		f = nodeUnparenTwo
+	case "break", "continue", "return": // TODO: return should use commas between items
+		f = nodeUnparenAll
 	default:
 		f = nodeFuncall
 	}
@@ -165,6 +165,16 @@ func (n *Node) GoString() string {
 func nodeUnparenTwo(first *Node) string {
 	// TODO: Should have single "unparen" function
 	return nodeProcessValue(first) + " " + nodeProcessValue(first.next)
+}
+
+// Return the contents of the given Node and all following same-level
+// Nodes, separated by spaces.
+func nodeUnparenAll(first *Node) string {
+	out := nodeProcessValue(first)
+	for n := first.next; n != nil; n = n.next {
+		out += " " + nodeProcessValue(n)
+	}
+	return out
 }
 
 // Convert an import Node into a Go import command.
