@@ -15,11 +15,4 @@ func main() {
 	for x := 0; x < 1; x++ {
 		fmt.Println("'for' loop")
 	}
-	for range []int{1} {
-		fmt.Println("'range' loop without vars")
-	}
-	m := map[string]string{"'range'": "with vars"}
-	for i, v := range m {
-		fmt.Printf("%s loop %s\n", i, v)
-	}
 }
