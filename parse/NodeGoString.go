@@ -177,6 +177,16 @@ func nodeUnparenAll(first *Node) string {
 	return out
 }
 
+// Return the contents of the given Node and following same-level
+// Nodes, separated by commas.
+func nodeUnparenComma(first *Node) string {
+	out := nodeProcessValue(first)
+	for n := first.next; n != nil; n = n.next {
+		out += ", " + nodeProcessValue(n)
+	}
+	return out
+}
+
 // Convert an import Node into a Go import command.
 func nodeImport(first *Node) string {
 	out := "import ("
@@ -290,6 +300,31 @@ func nodeForCase(controlClause *Node) string {
 	return out
 }
 
+// return text representing a "switch var { case value: ... case val1 val2: ... }" block
+func nodeSwitchCase(initClause *Node) string {
+	n := initClause
+	out := "switch " + n.content + " {\n"
+	// loop thru cases
+	for n = n.next; n != nil; n = n.next {
+		// "case" statement
+		switch c := n.first.content; c {
+		case "":
+			out += "case " + nodeUnparenComma(n.first.first) + ":\n"
+		case "default":
+			out += "default:\n"
+		default:
+			out += "case " + c + ":\n"
+		}
+		// body of case
+		for inner := n.first.next; inner != nil; inner = inner.next {
+			out += nodeProcessAction(inner) + "\n"
+		}
+	}
+	// end brace
+	out += "}\n"
+	return out
+}
+
 // Convert if/for/switch/select statements into Go.
 func nodeControlBlock(first *Node) string {
 	out := ""
@@ -302,7 +337,8 @@ func nodeControlBlock(first *Node) string {
 		}
 	case "for":
 		out += nodeForCase(first.next)
-	//case "switch":
+	case "switch":
+		out += nodeSwitchCase(first.next)
 	default:
 		// TODO: implement other cases
 		panic("nodeControlBlock is unimplemented for '" + first.content + "'!")
