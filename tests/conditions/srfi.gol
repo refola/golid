@@ -12,7 +12,7 @@ func main () ()
 	if
 		false
 			panic "false happened"
-		else
+		true
 			fmt.Println "even if it's after false"
 	if
 		(foo)
@@ -22,7 +22,7 @@ func main () ()
 			panic "false happened"
 		false
 			panic "false happened"
-		else
+		true
 			fmt.Println "or after multiple falses"
 	if
 		true
