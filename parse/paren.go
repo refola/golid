@@ -115,6 +115,7 @@ func parseString(s string) (Expression, error) {
 				for s != "" && s[0] != '\n' {
 					s = s[1:]
 				}
+				s = s[1:] // alse skip trailing '\n'
 			default: // must be a token, finally
 				end := findTokenEnd(s)
 				if end < 0 {
