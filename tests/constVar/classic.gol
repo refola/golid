@@ -18,5 +18,5 @@
 (func quux () string
 	(return "'baz' is a top-level variable from a function."))
 
-(func main ()
+(func main () ()
 	(fmt.Printf "%s\n%s\n%s\n%s\n%s\n" foo bar baz alpha beta))
