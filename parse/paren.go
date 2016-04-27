@@ -10,6 +10,9 @@ import (
 // Find shortest sequence of double quote, followed by escaped and unescaped characters, followed by double quote
 var stringRegex = regexp.MustCompile(`"([^"\\]|\\.)*"`)
 
+// Find a single quoted character, which consists of a single quote, an optional backslash, any character, and a closing single quote.
+var charRegex = regexp.MustCompile(`'\\?.'`)
+
 // Find longest sequence of non-syntax characters
 var tokenRegex = regexp.MustCompile("[^ \t\n\"()]+")
 
@@ -20,16 +23,19 @@ var tokenRegex = regexp.MustCompile("[^ \t\n\"()]+")
 // Returns a negative value if there is no valid token.
 func findTokenEnd(s string) int {
 	var re *regexp.Regexp
-	if s[0] == '"' {
+	switch s[0] {
+	case '"':
 		re = stringRegex
-	} else {
+	case '\'':
+		re = charRegex
+	default:
 		re = tokenRegex
 	}
 	loc := re.FindStringIndex(s)
 	if loc == nil {
 		return -1
 	} else {
-		return loc[1]
+		return loc[1] // ending index of regex match
 	}
 }
 
