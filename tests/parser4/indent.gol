@@ -35,7 +35,7 @@ func findTokenEnd (s string) (int)
 ; NOTE: This assumes that the calling parse function is not at a blank line state.
 func indentSrfi49 (depthChange int node *Node) (*Node)
 	if
-		(< depthChange < 0)
+		(< depthChange 0)
 			; decrease depth by as many levels as the change
 			for ((:= i depthChange) (< i 0) (++ i))
 				= node (node.Parent)
