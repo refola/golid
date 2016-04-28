@@ -178,7 +178,7 @@ func TestNodeProcessValue(t *testing.T) {
 		}
 		// ".first" gets rid of top-level parens added by parseString()
 		n := expr.(*Node)
-		out := nodeProcessValue(n)
+		out := nc_value(n)
 		if out != want {
 			t.Errorf("%s:\nGot '%s' instead.", log, out)
 			failed++
