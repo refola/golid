@@ -25,13 +25,25 @@ func nkw_package(keywordNode *Node) string {
 // TODO: This is currently broken. It should do this:
 // (var myVar value)→"var myVar = value"
 func nkw_var(keywordNode *Node) string {
-	panic("nodeConstVar: Pretending to be unimplmeented!")
-	out := keywordNode.content + "("
-	for n := keywordNode.next; n != nil; n = n.next {
-		out += n.first.content
-		out += nc_value(n.first.next)
+	panic("nkw_var: Pretending to be unimplemented!")
+	n := keywordNode
+	out := n.content
+	n = n.next
+	// if it's a single-var declaration
+	if n.content != "" {
+
+	} else { // if it's a multi-var declaration
+		panic("nkw_var: multi-var case not implemented")
 	}
-	out += ")"
+
+	/*
+		out := keywordNode.content + "("
+		for n := keywordNode.next; n != nil; n = n.next {
+			out += n.first.content
+			out += nc_value(n.first.next)
+		}
+		out += ")"
+	*/
 	return out
 }
 
@@ -105,6 +117,23 @@ func nkw_for(keywordNode *Node) string {
 	}
 	// end brace
 	out += "}\n"
+	return out
+}
+
+// return text representing a "return [values ...]" statement
+func nkw_return(keywordNode *Node) string {
+	n := keywordNode
+	// "return"
+	out := n.content
+	// args
+	n = n.next
+	for n != nil {
+		out += " " + nc_value(n) + ","
+		n = n.next
+	}
+	if out != keywordNode.content {
+		out = out[:len(out)-1]
+	}
 	return out
 }
 

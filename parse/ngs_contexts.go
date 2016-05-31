@@ -36,11 +36,13 @@ func nc_action(n *Node) string {
 		f = nkw_if
 	case "for":
 		f = nkw_for
+	case "return":
+		f = nkw_return
 	case "switch":
 		f = nkw_switch
 	case "select":
 		panic("nodeProcessAction: select not implemented")
-	case "break", "continue", "return": // TODO: return should use commas between items
+	case "break", "continue":
 		panic("nodeProcessAction: '" + first.content + "' is not properly implemented")
 		f = nu_raw_content_space
 	default:
@@ -51,6 +53,9 @@ func nc_action(n *Node) string {
 
 // Process a value Node
 func nc_value(n *Node) string {
+	if n == nil {
+		return ""
+	}
 	if n.content != "" {
 		return n.content
 	}

@@ -4,7 +4,10 @@
 
 package parse
 
-import "fmt"
+import (
+	"fmt"
+	"runtime/debug"
+)
 
 // Apply the correct nc_* function to each Node starting from first
 // and going until the end of the current level. WARNING: You will
@@ -16,14 +19,15 @@ func nu_process_many(first *Node, f func(*Node) string) string {
 		result, err := func() (out string, err error) {
 			defer func() {
 				if r := recover(); r != nil {
-					err = fmt.Errorf("Recovered panic: %v", r)
+					stack := string(debug.Stack())
+					err = fmt.Errorf("Recovered panic: %v.\n\nHere's the stack:\n%s", r, stack)
 				}
 			}()
 			out = f(n)
 			return
 		}()
 		if err != nil {
-			panic(fmt.Errorf("Could not process code: %v\n Got error: %v", n, err))
+			panic(fmt.Errorf("Could not process code:\n%v\n\nGot error:\n%v", n, err))
 		} else {
 			out += result + "\n"
 		}
@@ -32,14 +36,20 @@ func nu_process_many(first *Node, f func(*Node) string) string {
 }
 
 // Generate a list of raw Node contents (only node.content, ignoring
-// children), separated by given separator string. WARNING: This break
-// recursion.
+// children), separated by given separator string. WARNING: This
+// breaks recursion.
 func nu_raw_content(first *Node, sep string) string {
-	out := first.content
-	for n := first.next; n != nil; n = n.next {
-		out += sep + n.content
+	out := ""
+	n := first
+	for n != nil {
+		out += n.content + sep
+		n = n.next
 	}
-	return out
+	if out == "" {
+		return out
+	} else {
+		return out[:len(out)-len(sep)]
+	}
 }
 
 // Call nodeRawContents with a space for the separator.
