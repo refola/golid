@@ -6,6 +6,10 @@
 
 package parse
 
+// Convert Golid "(break)", "(break label)", "(continue)", and
+// "(continue label)" statements into Go.
+var nkw_break func(*Node) string = nu_raw_content_space
+
 // Convert an import Node into a Go import command.
 func nkw_import(keywordNode *Node) string {
 	out := "import ("
@@ -21,29 +25,47 @@ func nkw_package(keywordNode *Node) string {
 	return nu_raw_content(keywordNode, " ")
 }
 
-// Convert a var Node into a Go var declaration.
-// TODO: This is currently broken. It should do this:
+// Convert Golid "(myVar value)" and "(myVar type value)" expressions
+// (which are to the right of var (and const) expressions) into
+// corresponding Go "myVar = value" and "myVar type = vaule"
+// expressions.
+func nkw_var_post_kw(varNameNode *Node) string {
+	n := varNameNode
+	out := n.content
+	n = n.next
+	if n.next == nil { // "myVar value" case
+		out += " = " + nc_value(n)
+	} else { // "myVar type value" case
+		out += " " + n.content + " = " + nc_value(n.next)
+	}
+	return out
+}
+
+// Convert a var Node into a Go var declaration.  TODO: This is
+// currently broken. Here's how it should convert things:
 // (var myVar value)→"var myVar = value"
+// (var myVar type value)→"var myVar type = value"
+// (var (myVar1 value) (myVar2 type value))
+// → "var (
+//        myVar1 = value
+//        myVar2 type = value
+// )"
 func nkw_var(keywordNode *Node) string {
-	panic("nkw_var: Pretending to be unimplemented!")
+	// "var" (or "const")
 	n := keywordNode
 	out := n.content
 	n = n.next
 	// if it's a single-var declaration
 	if n.content != "" {
-
+		out += " " + nkw_var_post_kw(n) + "\n"
 	} else { // if it's a multi-var declaration
-		panic("nkw_var: multi-var case not implemented")
-	}
-
-	/*
-		out := keywordNode.content + "("
-		for n := keywordNode.next; n != nil; n = n.next {
-			out += n.first.content
-			out += nc_value(n.first.next)
+		out += " (\n"
+		for n != nil {
+			out += nkw_var_post_kw(n.first) + "\n"
+			n = n.next
 		}
 		out += ")"
-	*/
+	}
 	return out
 }
 

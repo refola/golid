@@ -43,8 +43,7 @@ func nc_action(n *Node) string {
 	case "select":
 		panic("nodeProcessAction: select not implemented")
 	case "break", "continue":
-		panic("nodeProcessAction: '" + first.content + "' is not properly implemented")
-		f = nu_raw_content_space
+		f = nkw_break
 	default:
 		f = ns_funcall
 	}
