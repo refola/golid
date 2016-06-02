@@ -7,5 +7,5 @@ func square(n int) int {
 }
 
 func main() {
-	fmt.Printf("5^2==%s\n", square(5))
+	fmt.Printf("5^2==%v\n", square(5))
 }

@@ -12,4 +12,4 @@ func fib (n int) (int)
 				fib (- n 2))
 
 func main () ()
-	fmt.Printf "fib(5)==%v\n" (fib 5)
+	fmt.Printf "fib(5)==%d\n" (fib 5)

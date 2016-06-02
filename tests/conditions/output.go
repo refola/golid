@@ -26,7 +26,7 @@ func main() {
 		fmt.Println("or after multiple falses")
 	}
 	if true {
-		fmt.Printf("or when it's on")
+		fmt.Printf("or when it's on ")
 		fmt.Println("multiple lines")
 	}
 }
