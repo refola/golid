@@ -20,11 +20,15 @@ func ns_assign(first *Node) string {
 
 // Convert a function call into Go
 func ns_funcall(first *Node) string {
-	out := first.content + "( " // The space is a hack to make the "len(out)-1" bit not remove the "(" in a nil-adic function
+	out := first.content + "("
 	for n := first.next; n != nil; n = n.next {
-		out += nc_value(n) + ","
+		out += nc_value(n) + ", "
 	}
-	out = out[:len(out)-1] + ")"
+	offset := len(out) - len(", ")
+	if out[offset:] == ", " {
+		out = out[:offset]
+	}
+	out += ")"
 	return out
 }
 
