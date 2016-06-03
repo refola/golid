@@ -63,6 +63,11 @@ test-dir() {
 
 # Make sure we're at the right place before doing stuff.
 test_dir="$(dirname "$(readlink -f "$0")")/tests" || exit 1
+
+# Make sure the latest Golid version is installed.
+"$test_dir"/../install.sh
+
+# Run the tests.
 for d in "$test_dir"/*; do
     test-dir "$d"
 done
