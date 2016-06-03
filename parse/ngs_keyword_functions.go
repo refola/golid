@@ -161,11 +161,11 @@ func nkw_return(keywordNode *Node) string {
 
 // return text representing a "switch var { case value: ... case val1 val2: ... }" block
 func nkw_switch(keywordNode *Node) string {
-	// "switch"
-	out := keywordNode.content + " " + nc_value(keywordNode.next) + " {\n"
-	n := keywordNode.next.next
+	n:=keywordNode
+	// "switch" and value expression to switch on
+	out := n.content + " " + nc_value(n.next) + " {\n"
 	// loop thru cases
-	for n = n.next; n != nil; n = n.next {
+	for n = n.next.next; n != nil; n = n.next {
 		// "case" statement
 		switch c := n.first.content; c {
 		case "":
