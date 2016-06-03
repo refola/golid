@@ -12,10 +12,10 @@
 	(alpha "'alpha' is a top-level variable in a 'var(...)' expression.")
 	(beta (omega)))
 
-(func omega () string
+(func omega () (string)
 	(return "'beta' is like 'alpha', but from a function."))
 
-(func quux () string
+(func quux () (string)
 	(return "'baz' is a top-level variable from a function."))
 
 (func main () ()
