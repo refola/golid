@@ -101,14 +101,14 @@ func nkw_if(keywordNode *Node) string {
 	// "if"
 	out := n.content + " "
 	// first case
-	n=n.next
+	n = n.next
 	out += nc_value(n.first) + " {\n"
 	out += nu_process_many(n.first.next, nc_action)
 	// other cases
 	for n = n.next; n != nil; n = n.next {
-		if n.first.content=="else"{
-			out+="} else {\n"
-		}else{
+		if n.first.content == "else" {
+			out += "} else {\n"
+		} else {
 			out += "} else if " + nc_value(n.first) + " {\n"
 		}
 		out += nu_process_many(n.first.next, nc_action)
@@ -166,7 +166,7 @@ func nkw_return(keywordNode *Node) string {
 
 // return text representing a "switch var { case value: ... case val1 val2: ... }" block
 func nkw_switch(keywordNode *Node) string {
-	n:=keywordNode
+	n := keywordNode
 	// "switch" and value expression to switch on
 	out := n.content + " " + nc_value(n.next) + " {\n"
 	// loop thru cases
