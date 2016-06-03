@@ -97,16 +97,21 @@ func nkw_func(keywordNode *Node) string {
 
 // return text representing an "if condition { stuff() ... }" block
 func nkw_if(keywordNode *Node) string {
+	n := keywordNode
 	// "if"
-	out := keywordNode.content + " "
+	out := n.content + " "
 	// first case
-	cas := keywordNode.next
-	out += nc_value(cas.first) + " {\n"
-	out += nu_process_many(cas.first.next, nc_action)
+	n=n.next
+	out += nc_value(n.first) + " {\n"
+	out += nu_process_many(n.first.next, nc_action)
 	// other cases
-	for cas = cas.next; cas != nil; cas = cas.next {
-		out += "} else if " + nc_value(cas.first) + " {\n"
-		out += nu_process_many(cas.first.next, nc_action)
+	for n = n.next; n != nil; n = n.next {
+		if n.first.content=="else"{
+			out+="} else {\n"
+		}else{
+			out += "} else if " + nc_value(n.first) + " {\n"
+		}
+		out += nu_process_many(n.first.next, nc_action)
 	}
 	// final closing
 	out += "}\n"
