@@ -2,6 +2,8 @@
 
 package parse
 
+import "strings"
+
 // An Expression represents a parsed Lisp expression, which is either
 // a list of Expressions or an Atom. This interface attempts to unify
 // both cases.
@@ -50,19 +52,39 @@ func (n *Node) AddToken(s string) {
 // Accessor needed for parser
 func (n *Node) Parent() *Node { return n.parent }
 
+// Indent every line with a leading tab.
+func indent(s string) string {
+	ret := ""
+	lines := strings.Split(s, "\n")
+	for _, line := range lines {
+		ret += "\t" + line + "\n"
+	}
+	ret = ret[:len(ret)-1] // remove trailing "\n"
+	return ret
+}
+
 // Spit out the code in Lisp form
 func (n *Node) String() string {
 	ret := ""
 	switch {
 	case n.first != nil:
 		ret += "("
-		child := n.first
-		for child != nil {
-			ret += child.String()
-			ret += "\n"
-			child = child.next
+		plainVals := true
+		for child := n.first; child != nil; child = child.next {
+			if child.first != nil { // if we've reached a (...) group
+				plainVals = false
+			}
+			if plainVals {
+				ret += " "
+			} else {
+				ret += "\n"
+			}
+			indented := indent(child.String())
+			indented = indented[1:] // remove leading "\t"
+			ret += indented
 		}
-		ret = ret[:len(ret)-1] + ")"
+		ret = "(" + ret[2:] // convert leading "( " to "("
+		ret += ")"
 	case n.content == "":
 		ret += "()"
 	default:
