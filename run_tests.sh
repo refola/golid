@@ -35,7 +35,7 @@ test-dir() {
                 if ! output="$(go run "$out_file" 2>/dev/null)"; then
                     failed="yes"
                     messages+=("$(clr 1 "Error in $f: Could not run generated '$out_file'.")")
-                    messages+=("$(clr 2 "Run test.sh for debugging info.")")
+                    messages+=("$(clr 2 "Examine '$out_file' to see what went wrong.")")
                 else
                     rm "$out_file" # and then clean up
                     if [ "$show" = "all" ]; then
@@ -45,18 +45,19 @@ test-dir() {
                         failed="yes"
                         messages+=("$(clr 1 "$f doesn't produce expected output.")")
                         messages+=("$(clr 1 "$f's results:")")
-                        messages+=("$output" "")
+                        messages+=("$output")
                     fi
                 fi
             else
                 failed="yes"
                 messages+=("$(clr 1 "Error! Golid failed on '$f'!")")
+                messages+=("$(clr 2 "Run test.sh for debugging info.")")
             fi
         fi
     done
     if [ -z "$failed" ]; then
         messages+=("$(clr 3 "Success!")")
-    elif [ -z "$show" ]; then
+    elif [ "$show" = "failed" ]; then
         messages+=("$(clr 1 "At least one test failed. Here's the expected output.")")
         messages+=("$expected")
     fi
