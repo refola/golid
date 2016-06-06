@@ -36,12 +36,12 @@ func dirNameExt(path string) (string, string, string) {
 }
 
 // Read a file into a Golid syntax tree
-func ReadGolid(plfile string) (Expression, error) {
-	_, _, ext := dirNameExt(plfile)
+func ReadGolid(golfile string) (Expression, error) {
+	_, _, ext := dirNameExt(golfile)
 	if ext != "gol" {
-		return nil, fmt.Errorf("File %s has non-Golid extension %s", plfile, ext)
+		return nil, fmt.Errorf("File %s has non-Golid extension %s", golfile, ext)
 	}
-	lispBytes, err := ioutil.ReadFile(plfile)
+	lispBytes, err := ioutil.ReadFile(golfile)
 	if err != nil {
 		return nil, err
 	}
@@ -50,13 +50,13 @@ func ReadGolid(plfile string) (Expression, error) {
 }
 
 // Convert a Golid file into Go.
-func Convert(plfile string) error {
-	parsed, err := ReadGolid(plfile)
+func Convert(golfile string) error {
+	parsed, err := ReadGolid(golfile)
 	if err != nil {
 		return err
 	}
 	go_text := parsed.GoString()
-	dir, name, ext := dirNameExt(plfile)
+	dir, name, ext := dirNameExt(golfile)
 	if dir == "" {
 		// make sure that following dir with "/" doesn't change semantics
 		dir = "."
