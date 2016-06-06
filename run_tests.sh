@@ -10,7 +10,9 @@ clr() {
 ## Usage: test-dir directory
 # Tests every .gol file in given directory
 test-dir() {
-    clr 2 "Testing $1"
+    echo -n " ..."
+    local messages
+    messages=("$(clr 2 "Testing $1")")
     cd "$1" || exit 1
     local f
     local out_file
@@ -21,7 +23,7 @@ test-dir() {
     if [ -f "./output.go" ]; then
         expected="$(go run ./output.go)"
     else
-        clr 2 "No output.go in $1. Showing raw output instead."
+        messages+=("$(clr 2 "No output.go in $1. Showing raw output instead.")")
         show="all"
     fi
     for f in ./*; do
@@ -32,33 +34,38 @@ test-dir() {
                 # run generated file if Golid worked
                 if ! output="$(go run "$out_file" 2>/dev/null)"; then
                     failed="yes"
-                    clr 1 "Error in $f: Could not run generated '$out_file'."
+                    messages+=("$(clr 1 "Error in $f: Could not run generated '$out_file'.")")
+                    messages+=("$(clr 2 "Run test.sh for debugging info.")")
                 else
                     rm "$out_file" # and then clean up
                     if [ "$show" = "all" ]; then
-                        clr 7 "$f:"
-                        echo "$output"
+                        messages+=("$(clr 7 "$f:")")
+                        messages+=("$output")
                     elif [ "$output" != "$expected" ]; then
                         failed="yes"
-                        clr 1 "$f doesn't produce expected output."
-                        clr 1 "$f's results:"
-                        echo "$output"
-                        echo
+                        messages+=("$(clr 1 "$f doesn't produce expected output.")")
+                        messages+=("$(clr 1 "$f's results:")")
+                        messages+=("$output" "")
                     fi
                 fi
             else
                 failed="yes"
-                clr 1 "Error! Golid failed on '$f'!"
+                messages+=("$(clr 1 "Error! Golid failed on '$f'!")")
             fi
         fi
     done
     if [ -z "$failed" ]; then
-        clr 3 "Success!"
-    else
-        clr 1 "At least one test failed. Here's the expected output."
-        echo "$expected"        
+        messages+=("$(clr 3 "Success!")")
+    elif [ -z "$show" ]; then
+        messages+=("$(clr 1 "At least one test failed. Here's the expected output.")")
+        messages+=("$expected")
     fi
-    echo
+    if [ -n "$failed" ] || [ "$show" = "all" ] || [ -n "$DEBUG" ]; then
+        echo
+        for message in "${messages[@]}"; do
+            echo -e "$message"
+        done
+    fi
 }
 
 # Make sure we're at the right place before doing stuff.
@@ -67,7 +74,15 @@ test_dir="$(dirname "$(readlink -f "$0")")/tests" || exit 1
 # Make sure the latest Golid version is installed.
 "$test_dir"/../install.sh
 
+echo -n "Running tests. Please wait."
+
+# Enable debug if told to
+if [ "$1" = "debug" ]; then
+    DEBUG="true"
+fi
+
 # Run the tests.
 for d in "$test_dir"/*; do
     test-dir "$d"
 done
+echo
